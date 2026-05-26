@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document defines the macOS packaging plan for Ant Browser.
+This document defines the macOS packaging plan for WytaoF Browser.
 
 The goal is to turn the current codebase into a macOS build that can:
 
@@ -52,7 +52,7 @@ The repository does not yet have:
 The repository now includes the first macOS writable-state implementation for app bundle roots:
 
 - when the app root is inside `.app/Contents/MacOS` or `.app/Contents/Resources`
-- writable state is redirected to `~/Library/Application Support/ant-browser`
+- writable state is redirected to `~/Library/Application Support/wytaof-browser`
 - `bin/` stays in the app bundle
 - config, chrome, and data move to the user state root
 
@@ -60,9 +60,9 @@ The repository now includes the first macOS writable-state implementation for ap
 
 The current initial macOS packaging scaffold intentionally places helper binaries and seed files under:
 
-- `Ant Browser.app/Contents/MacOS/bin`
-- `Ant Browser.app/Contents/MacOS/config.yaml`
-- `Ant Browser.app/Contents/MacOS/chrome/README.md`
+- `WytaoF Browser.app/Contents/MacOS/bin`
+- `WytaoF Browser.app/Contents/MacOS/config.yaml`
+- `WytaoF Browser.app/Contents/MacOS/chrome/README.md`
 
 This is not the prettiest final bundle layout, but it matches the current runtime path resolution and avoids a larger refactor in Phase 1.
 
@@ -112,16 +112,16 @@ Why:
 
 Recommended structure inside the built app:
 
-- `Ant Browser.app/Contents/MacOS/ant-chrome`
-- `Ant Browser.app/Contents/Resources/bin/xray`
-- `Ant Browser.app/Contents/Resources/bin/sing-box`
+- `WytaoF Browser.app/Contents/MacOS/wytaof-browser`
+- `WytaoF Browser.app/Contents/Resources/bin/xray`
+- `WytaoF Browser.app/Contents/Resources/bin/sing-box`
 - optional placeholder `chrome/README.md` if you want to keep behavior aligned with Linux
 
 ### User-Writable State
 
 Recommended macOS state root:
 
-- `~/Library/Application Support/ant-browser`
+- `~/Library/Application Support/wytaof-browser`
 
 Recommended contents under the state root:
 
@@ -267,7 +267,7 @@ The macOS work should not be considered complete until all items below are verif
 
 - app launches from Finder
 - app launches after copying to `/Applications`
-- first launch creates `~/Library/Application Support/ant-browser`
+- first launch creates `~/Library/Application Support/wytaof-browser`
 - `config.yaml` is seeded correctly
 - database and `data/` are created under the user state root
 
@@ -326,7 +326,7 @@ The safest first milestone is:
 - native build on a real Mac
 - unsigned `.app`
 - zipped artifact for internal testing
-- detached writable state under `~/Library/Application Support/ant-browser`
+- detached writable state under `~/Library/Application Support/wytaof-browser`
 - bundled `xray` and `sing-box`
 
 Do not start with:

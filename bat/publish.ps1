@@ -234,7 +234,7 @@ function Resolve-NsisPath {
 
 function Build-WindowsBinary {
     Write-Host "[Windows] 执行 Wails 构建..."
-    $binaryPath = Join-Path $repoRoot "build/bin/ant-chrome.exe"
+    $binaryPath = Join-Path $repoRoot "build/bin/wytaof-browser.exe"
     Assert-RequiredSourceFiles -Action "Windows packaging" -Paths @(
         "go.mod",
         "go.sum",
@@ -263,9 +263,9 @@ function Build-WindowsBinary {
     }
 
     if (-not (Test-Path -LiteralPath $binaryPath -PathType Leaf)) {
-        throw "构建产物不存在: build\bin\ant-chrome.exe"
+        throw "构建产物不存在: build\bin\wytaof-browser.exe"
     }
-    Write-Host "✓ 构建成功: build\bin\ant-chrome.exe"
+    Write-Host "✓ 构建成功: build\bin\wytaof-browser.exe"
     Write-Host ""
 }
 
@@ -432,7 +432,7 @@ function New-WindowsStaging {
 
     $stagingDir = Join-Path $repoRoot "publish/staging"
     $releaseConfig = Join-Path $repoRoot "publish/config.init.yaml"
-    $binaryPath = Join-Path $repoRoot "build/bin/ant-chrome.exe"
+    $binaryPath = Join-Path $repoRoot "build/bin/wytaof-browser.exe"
     $binDir = Join-Path $repoRoot "bin"
     $chromeRoot = Join-Path $repoRoot "chrome"
 
@@ -441,11 +441,11 @@ function New-WindowsStaging {
     }
     New-Item -ItemType Directory -Path $stagingDir -Force | Out-Null
 
-    Copy-Item -LiteralPath $binaryPath -Destination (Join-Path $stagingDir "ant-chrome.exe") -Force
-    if (-not (Test-Path -LiteralPath (Join-Path $stagingDir "ant-chrome.exe") -PathType Leaf)) {
-        throw "staging 中缺少 ant-chrome.exe"
+    Copy-Item -LiteralPath $binaryPath -Destination (Join-Path $stagingDir "wytaof-browser.exe") -Force
+    if (-not (Test-Path -LiteralPath (Join-Path $stagingDir "wytaof-browser.exe") -PathType Leaf)) {
+        throw "staging 中缺少 wytaof-browser.exe"
     }
-    Write-Host "✓ 复制 ant-chrome.exe"
+    Write-Host "✓ 复制 wytaof-browser.exe"
 
     if (-not (Test-Path -LiteralPath $releaseConfig -PathType Leaf)) {
         throw "未找到发布配置模板: publish\config.init.yaml"
@@ -559,7 +559,7 @@ function Publish-Linux {
     Write-Host ""
 
     $linuxScript = Join-Path $repoRoot "publish/linux/publish-linux-docker.ps1"
-    $archOutFile = Join-Path $env:TEMP ("ant-browser-linux-arch-" + [guid]::NewGuid().ToString("N") + ".txt")
+    $archOutFile = Join-Path $env:TEMP ("wytaof-browser-linux-arch-" + [guid]::NewGuid().ToString("N") + ".txt")
     if (Test-Path -LiteralPath $archOutFile) {
         Remove-Item -LiteralPath $archOutFile -Force
     }
@@ -584,7 +584,7 @@ function Publish-Linux {
 }
 
 try {
-    Write-Section "Ant Browser - 发布打包脚本"
+    Write-Section "WytaoF Browser - 发布打包脚本"
     Write-Host ""
     Write-Host "当前工作目录: $repoRoot"
     Write-Host ""
@@ -614,7 +614,7 @@ try {
     Write-Section "✓ 发布完成！"
     Write-Host ""
     if ($script:WindowsDone) {
-        Write-Host "Windows 安装包: publish\output\AntBrowser-Setup-$script:Version.exe"
+        Write-Host "Windows 安装包: publish\output\WytaoFBrowser-Setup-$script:Version.exe"
     }
     if ($script:LinuxDone) {
         Write-Host "Linux 产物目录: publish\output\"

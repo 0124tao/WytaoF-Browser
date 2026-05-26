@@ -271,7 +271,7 @@ try {
     Write-Host "  Linux 架构: $linuxArch"
     Write-Host ""
 
-    $builderImage = "ant-browser-linux-builder:local"
+    $builderImage = "wytaof-browser-linux-builder:local"
     $dockerfilePath = Join-Path $RepoRoot "publish/linux/linux-builder.Dockerfile"
     $resolvedBuilderBaseImage = $BuilderBaseImage
     if (-not $resolvedBuilderBaseImage -or $resolvedBuilderBaseImage.Trim() -eq "") {
@@ -288,7 +288,7 @@ try {
             [System.Text.Encoding]::UTF8.GetBytes("$dockerfileHashRaw|$resolvedBuilderBaseImage")
         )
     ).Replace("-", "").ToLowerInvariant()
-    $builderHashLabel = "ant.browser.builder.hash"
+    $builderHashLabel = "wytaof.browser.builder.hash"
     $builderHashCurrent = ""
     $builderInspectJson = ""
     $builderInspectExitCode = 1
@@ -338,10 +338,10 @@ try {
         Write-Host ""
     }
 
-    $npmCacheVolume = "ant-browser-linux-npm-cache"
-    $nodeModulesVolume = "ant-browser-linux-node-modules-$linuxArch"
-    $goModCacheVolume = "ant-browser-linux-go-mod-cache"
-    $goBuildCacheVolume = "ant-browser-linux-go-build-cache"
+    $npmCacheVolume = "wytaof-browser-linux-npm-cache"
+    $nodeModulesVolume = "wytaof-browser-linux-node-modules-$linuxArch"
+    $goModCacheVolume = "wytaof-browser-linux-go-mod-cache"
+    $goBuildCacheVolume = "wytaof-browser-linux-go-build-cache"
     $runtimeCpuLimit = Get-EnvOrDefault -Name "ANT_BROWSER_LINUX_DOCKER_CPUS" -DefaultValue "2"
     $runtimeMemoryLimit = Get-EnvOrDefault -Name "ANT_BROWSER_LINUX_DOCKER_MEMORY" -DefaultValue "1408m"
     $runtimeMemorySwapLimit = Get-EnvOrDefault -Name "ANT_BROWSER_LINUX_DOCKER_MEMORY_SWAP" -DefaultValue "1792m"
