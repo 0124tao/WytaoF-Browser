@@ -3,11 +3,7 @@ package backend
 import (
 	"ant-chrome/backend/internal/browser"
 	"ant-chrome/backend/internal/config"
-	"ant-chrome/backend/internal/logger"
 	"fmt"
-	"os"
-	"os/exec"
-	"path/filepath"
 	"strings"
 	"time"
 )
@@ -136,36 +132,16 @@ func (a *App) markProfileStoppedLocked(profileId string, profile *BrowserProfile
 }
 
 func (a *App) openBrowserWindowForRunningProfile(profile *BrowserProfile, extraLaunchArgs []string, startURLs []string) error {
-	chromeBinaryPath, err := a.browserMgr.ResolveChromeBinary(profile)
-	if err != nil {
-		return err
+	if profile == nil {
+		return fmt.Errorf("实例为空")
 	}
-
-	userDataDir := a.browserMgr.ResolveUserDataDir(profile)
-	if err := os.MkdirAll(userDataDir, 0755); err != nil {
-		return fmt.Errorf("无法创建用户数据目录 %s：%w", userDataDir, err)
+	if profile.DebugPort <= 0 || !profile.DebugReady {
+		return fmt.Errorf("实例调试接口尚未就绪")
 	}
-
-	args := []string{
-		fmt.Sprintf("--user-data-dir=%s", userDataDir),
+	for _, targetURL := range normalizeNonEmptyStrings(startURLs) {
+		if err := cdpBrowserCall(profile.DebugPort, "Target.createTarget", map[string]any{"url": targetURL}); err != nil {
+			return err
+		}
 	}
-	sanitizedExtraLaunchArgs, managedExtraArgs := sanitizeManagedLaunchArgs(extraLaunchArgs)
-	logManagedLaunchArgOverrides(logger.New("Browser"), profile.ProfileId, "running-window.extraLaunchArgs", managedExtraArgs)
-	args = append(args, sanitizedExtraLaunchArgs...)
-	if len(startURLs) > 0 {
-		args = append(args, startURLs...)
-	} else {
-		args = append(args, "about:blank")
-	}
-
-	cmd := exec.Command(chromeBinaryPath, args...)
-	cmd.Dir = filepath.Dir(chromeBinaryPath)
-	if err := cmd.Start(); err != nil {
-		return fmt.Errorf("%s", describeChromeProcessStartError(chromeBinaryPath, err))
-	}
-
-	go func() {
-		_ = cmd.Wait()
-	}()
 	return nil
 }

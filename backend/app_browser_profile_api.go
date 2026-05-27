@@ -17,6 +17,10 @@ type BrowserCore = browser.Core
 type BrowserCoreInput = browser.CoreInput
 type BrowserCoreValidateResult = browser.CoreValidateResult
 type BrowserCoreExtendedInfo = browser.CoreExtendedInfo
+type BrowserProfileTemplate = browser.ProfileTemplate
+type BrowserProfileTemplateInput = browser.ProfileTemplateInput
+type BrowserProfileBatchCreateInput = browser.ProfileBatchCreateInput
+type BrowserProfileBatchCreateResult = browser.ProfileBatchCreateResult
 
 // BrowserProfileList 获取所有实例列表
 func (a *App) BrowserProfileList() []BrowserProfile { return a.browserMgr.List() }
@@ -40,6 +44,10 @@ func (a *App) BrowserProfileCreate(input BrowserProfileInput) (*BrowserProfile, 
 	return a.browserMgr.Create(input)
 }
 
+func (a *App) BrowserProfileBatchCreate(input BrowserProfileBatchCreateInput) BrowserProfileBatchCreateResult {
+	return a.browserMgr.BatchCreate(input)
+}
+
 func (a *App) BrowserProfileUpdate(profileId string, input BrowserProfileInput) (*BrowserProfile, error) {
 	return a.browserMgr.Update(profileId, input)
 }
@@ -49,6 +57,22 @@ func (a *App) BrowserProfileDelete(profileId string) error { return a.browserMgr
 // BrowserProfileCopy 复制实例配置（除指纹参数外全部复制）
 func (a *App) BrowserProfileCopy(profileId string, newName string) (*BrowserProfile, error) {
 	return a.browserMgr.Copy(profileId, newName)
+}
+
+func (a *App) BrowserProfileTemplateList() ([]BrowserProfileTemplate, error) {
+	return a.browserMgr.ListProfileTemplates()
+}
+
+func (a *App) BrowserProfileTemplateCreate(input BrowserProfileTemplateInput) (*BrowserProfileTemplate, error) {
+	return a.browserMgr.CreateProfileTemplate(input)
+}
+
+func (a *App) BrowserProfileTemplateUpdate(templateId string, input BrowserProfileTemplateInput) (*BrowserProfileTemplate, error) {
+	return a.browserMgr.UpdateProfileTemplate(templateId, input)
+}
+
+func (a *App) BrowserProfileTemplateDelete(templateId string) error {
+	return a.browserMgr.DeleteProfileTemplate(templateId)
 }
 
 // migrateToSQLite 一次性迁移：若 SQLite 表为空则从旧文件导入数据，或初始化默认数据

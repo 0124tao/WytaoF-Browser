@@ -15,6 +15,7 @@ import {
   installAutomationRuntime,
   automationProbeSystemNode,
   automationRuntimeSelfCheck,
+  applyUiScale,
   defaultAutomationState,
 } from './api'
 import type { AppSettings } from './types'
@@ -84,6 +85,9 @@ export function SettingsPage() {
 
   const handleChange = <K extends keyof AppSettings>(key: K, value: AppSettings[K]) => {
     setSettings(prev => ({ ...prev, [key]: value }))
+    if (key === 'uiScale') {
+      applyUiScale(value)
+    }
     setHasChanges(true)
   }
 
@@ -396,6 +400,16 @@ export function SettingsPage() {
                   { value: 'zh-CN', label: '简体中文' },
                   { value: 'en-US', label: 'English' },
                 ]}
+              />
+            </FormItem>
+            <FormItem label="界面缩放" hint="75%-125%，竖屏窄窗口建议 85%-95%">
+              <Input
+                type="number"
+                value={settings.uiScale}
+                onChange={e => handleChange('uiScale', Math.min(125, Math.max(75, parseInt(e.target.value) || 100)))}
+                min={75}
+                max={125}
+                step={5}
               />
             </FormItem>
           </div>

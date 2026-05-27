@@ -348,3 +348,13 @@ export const FINGERPRINT_PRESETS: FingerprintPreset[] = [
     },
   },
 ]
+
+export function randomFingerprintArgs(currentArgs: string[] = []): string[] {
+  const current = deserialize(currentArgs)
+  const preset = FINGERPRINT_PRESETS[Math.floor(Math.random() * FINGERPRINT_PRESETS.length)]
+  return serialize({
+    ...preset.config,
+    seed: randomFingerprintSeed(),
+    unknownArgs: current.unknownArgs,
+  })
+}

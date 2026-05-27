@@ -91,7 +91,7 @@ func (a *App) shouldBlockClose(ctx context.Context) bool {
 func main() {
 	// 确定应用根目录：
 	// 1. 生产环境：exe 所在目录（快捷方式启动时 CWD 可能不对，需要修正）
-	// 2. dev 环境：wails dev 时 exe 可能在 temp 目录或 build/bin 目录，使用当前工作目录
+	// 2. dev 环境：wails dev 临时目录或显式开发开关下使用当前工作目录
 	if exePath, err := os.Executable(); err == nil {
 		exeDir := filepath.Dir(exePath)
 		tempDir := os.TempDir()
@@ -104,11 +104,9 @@ func main() {
 
 		exeDirLower := strings.ToLower(exeDir)
 		inTemp := strings.HasPrefix(exeDirLower, strings.ToLower(tempDir))
-		// wails dev 会把 exe 编译到 build/bin/ 目录
-		inBuildBin := strings.HasSuffix(filepath.ToSlash(exeDirLower), "/build/bin")
 
-		if inTemp || inBuildBin {
-			// dev 模式：exe 在临时目录或 build/bin，使用 CWD 作为根目录
+		if inTemp || envFlagEnabled("ANT_BROWSER_USE_CWD_ROOT") {
+			// dev 模式：exe 在临时目录或显式开发开关下，使用 CWD 作为根目录
 			isDevMode = true
 			if cwd, err := os.Getwd(); err == nil {
 				appRoot = cwd

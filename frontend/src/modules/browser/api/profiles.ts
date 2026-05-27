@@ -1,5 +1,26 @@
-import type { BrowserProfile, BrowserProfileInput } from '../types'
+import type {
+  BrowserProfile,
+  BrowserProfileBatchCreateInput,
+  BrowserProfileBatchCreateResult,
+  BrowserProfileInput,
+  BrowserProfileTemplate,
+  BrowserProfileTemplateInput,
+} from '../types'
 import { getBindings, getMockProfiles, nowISOString, setMockProfiles } from './runtime'
+import { randomFingerprintSeed } from '../utils/fingerprintSerializer'
+
+function withRandomFingerprintSeed(args: string[] = []): string[] {
+  const seedArg = `--fingerprint=${randomFingerprintSeed()}`
+  let replaced = false
+  const next = args.map((arg) => {
+    if (arg.trim().startsWith('--fingerprint=')) {
+      replaced = true
+      return seedArg
+    }
+    return arg
+  })
+  return replaced ? next : [seedArg, ...next]
+}
 
 export async function fetchBrowserProfiles(): Promise<BrowserProfile[]> {
   const bindings: any = await getBindings()
@@ -49,6 +70,39 @@ export async function createBrowserProfile(input: BrowserProfileInput): Promise<
   }
   setMockProfiles([profile, ...getMockProfiles()])
   return profile
+}
+
+export async function batchCreateBrowserProfiles(input: BrowserProfileBatchCreateInput): Promise<BrowserProfileBatchCreateResult> {
+  const bindings: any = await getBindings()
+  if (bindings?.BrowserProfileBatchCreate) {
+    return await bindings.BrowserProfileBatchCreate(input)
+  }
+
+  const count = Math.max(1, Math.min(200, input.count || 1))
+  const items: BrowserProfileBatchCreateResult['items'] = []
+  for (let index = 1; index <= count; index += 1) {
+    const suffix = String(index).padStart(3, '0')
+    const profileName = count > 1 ? `${input.base.profileName || '新建实例'}-${suffix}` : input.base.profileName
+    const profile: BrowserProfile = {
+      profileId: `mock-${Date.now()}-${index}`,
+      ...input.base,
+      profileName,
+      userDataDir: input.base.userDataDir && count > 1 ? `${input.base.userDataDir}-${suffix}` : input.base.userDataDir,
+      fingerprintArgs: input.randomizeFingerprintPerProfile ? withRandomFingerprintSeed(input.base.fingerprintArgs) : input.base.fingerprintArgs,
+      keywords: input.base.keywords || [],
+      running: false,
+      debugPort: 0,
+      debugReady: false,
+      pid: 0,
+      runtimeWarning: '',
+      lastError: '',
+      createdAt: nowISOString(),
+      updatedAt: nowISOString(),
+    }
+    items.push({ index, profileName, profile })
+  }
+  setMockProfiles([...items.map(item => item.profile!).filter(Boolean), ...getMockProfiles()])
+  return { total: count, succeeded: items.length, failed: 0, items }
 }
 
 export async function updateBrowserProfile(profileId: string, input: BrowserProfileInput): Promise<BrowserProfile | null> {
@@ -168,6 +222,53 @@ export async function renameBrowserTag(oldName: string, newName: string): Promis
   const bindings: any = await getBindings()
   if (bindings?.BrowserRenameTag) {
     await bindings.BrowserRenameTag(oldName, newName)
+    return true
+  }
+  return true
+}
+
+export async function fetchBrowserProfileTemplates(): Promise<BrowserProfileTemplate[]> {
+  const bindings: any = await getBindings()
+  if (bindings?.BrowserProfileTemplateList) {
+    return (await bindings.BrowserProfileTemplateList()) || []
+  }
+  return []
+}
+
+export async function createBrowserProfileTemplate(input: BrowserProfileTemplateInput): Promise<BrowserProfileTemplate | null> {
+  const bindings: any = await getBindings()
+  if (bindings?.BrowserProfileTemplateCreate) {
+    return (await bindings.BrowserProfileTemplateCreate(input)) || null
+  }
+  return {
+    templateId: `mock-template-${Date.now()}`,
+    ...input,
+    keywords: input.keywords || [],
+    tags: input.tags || [],
+    createdAt: nowISOString(),
+    updatedAt: nowISOString(),
+  }
+}
+
+export async function updateBrowserProfileTemplate(templateId: string, input: BrowserProfileTemplateInput): Promise<BrowserProfileTemplate | null> {
+  const bindings: any = await getBindings()
+  if (bindings?.BrowserProfileTemplateUpdate) {
+    return (await bindings.BrowserProfileTemplateUpdate(templateId, input)) || null
+  }
+  return {
+    templateId,
+    ...input,
+    keywords: input.keywords || [],
+    tags: input.tags || [],
+    createdAt: nowISOString(),
+    updatedAt: nowISOString(),
+  }
+}
+
+export async function deleteBrowserProfileTemplate(templateId: string): Promise<boolean> {
+  const bindings: any = await getBindings()
+  if (bindings?.BrowserProfileTemplateDelete) {
+    await bindings.BrowserProfileTemplateDelete(templateId)
     return true
   }
   return true

@@ -141,25 +141,26 @@ type BrowserBookmark struct {
 }
 
 type BrowserConfig struct {
-	UserDataRoot           string                 `yaml:"user_data_root"`
-	DefaultFingerprintArgs []string               `yaml:"default_fingerprint_args"`
-	DefaultLaunchArgs      []string               `yaml:"default_launch_args"`
-	DefaultStartURLs       []string               `yaml:"default_start_urls"`
-	RestoreLastSession     bool                   `yaml:"restore_last_session"`
-	StartReadyTimeoutMs    int                    `yaml:"start_ready_timeout_ms,omitempty"`
-	StartStableWindowMs    int                    `yaml:"start_stable_window_ms,omitempty"`
-	DefaultBookmarks       []BrowserBookmark      `yaml:"default_bookmarks,omitempty"`
-	Cores                  []BrowserCore          `yaml:"cores,omitempty"`
-	Proxies                []BrowserProxy         `yaml:"proxies,omitempty"`
-	Profiles               []BrowserProfileConfig `yaml:"profiles,omitempty"`
-	ChromeBinaryPath       string                 `yaml:"chrome_binary_path,omitempty"`
-	ClashBinaryPath        string                 `yaml:"clash_binary_path,omitempty"`
-	XrayBinaryPath         string                 `yaml:"xray_binary_path,omitempty"`
-	SingBoxBinaryPath      string                 `yaml:"singbox_binary_path,omitempty"`
-	CoreRoot               string                 `yaml:"core_root,omitempty"`
-	DefaultCoreId          string                 `yaml:"default_core_id,omitempty"`
-	DefaultConnectorType   string                 `yaml:"default_connector_type,omitempty"`
-	Environments           []BrowserEnvironment   `yaml:"environments,omitempty"`
+	UserDataRoot           string                         `yaml:"user_data_root"`
+	DefaultFingerprintArgs []string                       `yaml:"default_fingerprint_args"`
+	DefaultLaunchArgs      []string                       `yaml:"default_launch_args"`
+	DefaultStartURLs       []string                       `yaml:"default_start_urls"`
+	RestoreLastSession     bool                           `yaml:"restore_last_session"`
+	StartReadyTimeoutMs    int                            `yaml:"start_ready_timeout_ms,omitempty"`
+	StartStableWindowMs    int                            `yaml:"start_stable_window_ms,omitempty"`
+	DefaultBookmarks       []BrowserBookmark              `yaml:"default_bookmarks,omitempty"`
+	Cores                  []BrowserCore                  `yaml:"cores,omitempty"`
+	Proxies                []BrowserProxy                 `yaml:"proxies,omitempty"`
+	Profiles               []BrowserProfileConfig         `yaml:"profiles,omitempty"`
+	ProfileTemplates       []BrowserProfileTemplateConfig `yaml:"profile_templates,omitempty"`
+	ChromeBinaryPath       string                         `yaml:"chrome_binary_path,omitempty"`
+	ClashBinaryPath        string                         `yaml:"clash_binary_path,omitempty"`
+	XrayBinaryPath         string                         `yaml:"xray_binary_path,omitempty"`
+	SingBoxBinaryPath      string                         `yaml:"singbox_binary_path,omitempty"`
+	CoreRoot               string                         `yaml:"core_root,omitempty"`
+	DefaultCoreId          string                         `yaml:"default_core_id,omitempty"`
+	DefaultConnectorType   string                         `yaml:"default_connector_type,omitempty"`
+	Environments           []BrowserEnvironment           `yaml:"environments,omitempty"`
 }
 
 type BrowserCore struct {
@@ -214,6 +215,23 @@ type BrowserProfileConfig struct {
 	Keywords           []string `yaml:"keywords,omitempty" json:"keywords,omitempty"`
 	CreatedAt          string   `yaml:"created_at" json:"createdAt"`
 	UpdatedAt          string   `yaml:"updated_at" json:"updatedAt"`
+}
+
+type BrowserProfileTemplateConfig struct {
+	TemplateId      string   `yaml:"template_id" json:"templateId"`
+	TemplateName    string   `yaml:"template_name" json:"templateName"`
+	ProfileName     string   `yaml:"profile_name" json:"profileName"`
+	UserDataDir     string   `yaml:"user_data_dir" json:"userDataDir"`
+	CoreId          string   `yaml:"core_id" json:"coreId"`
+	FingerprintArgs []string `yaml:"fingerprint_args" json:"fingerprintArgs"`
+	ProxyId         string   `yaml:"proxy_id" json:"proxyId"`
+	ProxyConfig     string   `yaml:"proxy_config" json:"proxyConfig"`
+	LaunchArgs      []string `yaml:"launch_args" json:"launchArgs"`
+	Tags            []string `yaml:"tags" json:"tags"`
+	Keywords        []string `yaml:"keywords,omitempty" json:"keywords,omitempty"`
+	GroupId         string   `yaml:"group_id,omitempty" json:"groupId,omitempty"`
+	CreatedAt       string   `yaml:"created_at" json:"createdAt"`
+	UpdatedAt       string   `yaml:"updated_at" json:"updatedAt"`
 }
 
 type LoggingConfig struct {

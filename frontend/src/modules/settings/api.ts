@@ -5,6 +5,18 @@ import { defaultSettings } from './types'
 // 本地存储 key
 const SETTINGS_KEY = 'app_settings'
 
+export function normalizeUiScale(value: unknown): number {
+  const scale = Number(value)
+  if (!Number.isFinite(scale)) return defaultSettings.uiScale
+  return Math.min(125, Math.max(75, Math.round(scale)))
+}
+
+export function applyUiScale(value: unknown): void {
+  const scale = normalizeUiScale(value)
+  document.documentElement.style.setProperty('--app-ui-scale', String(scale / 100))
+  document.documentElement.style.fontSize = `${16 * (scale / 100)}px`
+}
+
 const getBindings = async () => {
   try {
     return await import('../../wailsjs/go/main/App')
@@ -116,18 +128,24 @@ export async function fetchSettings(): Promise<AppSettings> {
   try {
     const stored = localStorage.getItem(SETTINGS_KEY)
     if (stored) {
-      return { ...defaultSettings, ...JSON.parse(stored) }
+      const next = { ...defaultSettings, ...JSON.parse(stored) }
+      next.uiScale = normalizeUiScale(next.uiScale)
+      applyUiScale(next.uiScale)
+      return next
     }
   } catch (error) {
     console.error('Failed to load settings:', error)
   }
+  applyUiScale(defaultSettings.uiScale)
   return defaultSettings
 }
 
 // 保存设置
 export async function saveSettings(settings: AppSettings): Promise<boolean> {
   try {
-    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings))
+    const next = { ...settings, uiScale: normalizeUiScale(settings.uiScale) }
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(next))
+    applyUiScale(next.uiScale)
     return true
   } catch (error) {
     console.error('Failed to save settings:', error)
@@ -138,6 +156,7 @@ export async function saveSettings(settings: AppSettings): Promise<boolean> {
 // 重置设置
 export async function resetSettings(): Promise<AppSettings> {
   localStorage.removeItem(SETTINGS_KEY)
+  applyUiScale(defaultSettings.uiScale)
   return defaultSettings
 }
 

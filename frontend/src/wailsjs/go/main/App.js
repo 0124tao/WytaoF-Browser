@@ -214,6 +214,10 @@ export function BrowserInstanceStop(arg1) {
   return window['go']['main']['App']['BrowserInstanceStop'](arg1);
 }
 
+export function BrowserProfileBatchCreate(arg1) {
+  return window['go']['main']['App']['BrowserProfileBatchCreate'](arg1);
+}
+
 export function BrowserProfileBatchRemoveTags(arg1, arg2) {
   return window['go']['main']['App']['BrowserProfileBatchRemoveTags'](arg1, arg2);
 }
@@ -256,6 +260,22 @@ export function BrowserProfileSetCode(arg1, arg2) {
 
 export function BrowserProfileSetKeywords(arg1, arg2) {
   return window['go']['main']['App']['BrowserProfileSetKeywords'](arg1, arg2);
+}
+
+export function BrowserProfileTemplateCreate(arg1) {
+  return window['go']['main']['App']['BrowserProfileTemplateCreate'](arg1);
+}
+
+export function BrowserProfileTemplateDelete(arg1) {
+  return window['go']['main']['App']['BrowserProfileTemplateDelete'](arg1);
+}
+
+export function BrowserProfileTemplateList() {
+  return window['go']['main']['App']['BrowserProfileTemplateList']();
+}
+
+export function BrowserProfileTemplateUpdate(arg1, arg2) {
+  return window['go']['main']['App']['BrowserProfileTemplateUpdate'](arg1, arg2);
 }
 
 export function BrowserProfileUpdate(arg1, arg2) {

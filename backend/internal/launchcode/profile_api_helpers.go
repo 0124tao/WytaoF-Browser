@@ -130,8 +130,6 @@ func mapProfileWriteErrorStatus(err error) int {
 	case strings.Contains(msg, "proxy id not found"),
 		strings.Contains(msg, "代理id不存在"):
 		return http.StatusBadRequest
-	case strings.Contains(msg, "实例数量已达上限"):
-		return http.StatusConflict
 	default:
 		return http.StatusInternalServerError
 	}

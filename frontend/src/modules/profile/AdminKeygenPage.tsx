@@ -4,7 +4,7 @@ import { Card, Button, Input, Modal, toast, Textarea } from '../../shared/compon
 import { Key } from 'lucide-react'
 import { generateCDKeys } from '../dashboard/api'
 
-const ADMIN_PAGE_PASSWORD = '志字辈小蚂蚁'
+const ADMIN_PAGE_PASSWORD = '蔚蓝海岸'
 
 export function AdminKeygenPage() {
     const navigate = useNavigate()
@@ -61,7 +61,7 @@ export function AdminKeygenPage() {
             <Modal
                 open={!accessGranted}
                 onClose={() => navigate('/profile')}
-                title="管理员验证"
+                title="个人自用验证"
                 width="420px"
                 closable={false}
             >
@@ -93,8 +93,8 @@ export function AdminKeygenPage() {
             {accessGranted && (
                 <div className="space-y-6 animate-fade-in max-w-4xl mx-auto">
                     <div>
-                        <h1 className="text-xl font-semibold text-[var(--color-text-primary)]">系统核心管理 - CDKey 生成器</h1>
-                        <p className="text-sm text-[var(--color-text-muted)] mt-1">隐藏管理员工具。生成的每个兑换码均可为客户端增加 10 个永久额度。</p>
+                        <h1 className="text-xl font-semibold text-[var(--color-text-primary)]">个人自用工具 - CDKey 生成器</h1>
+                        <p className="text-sm text-[var(--color-text-muted)] mt-1">个人自用隐藏工具。生成的每个兑换码均可为客户端增加 10 个永久额度。</p>
                     </div>
 
                     <Card>

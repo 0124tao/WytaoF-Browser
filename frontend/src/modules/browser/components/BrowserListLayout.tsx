@@ -1,5 +1,5 @@
 ﻿import { Link } from 'react-router-dom'
-import { Activity, CheckCircle, ChevronRight, ChevronUp, Edit2, FileText, Gift, LayoutGrid, List, Play, Plus, RefreshCw, Sliders, Square, Star, Trash2, XCircle } from 'lucide-react'
+import { Activity, CheckCircle, ChevronRight, ChevronUp, Edit2, FileText, LayoutGrid, List, Play, Plus, RefreshCw, Sliders, Square, Star, Trash2, XCircle } from 'lucide-react'
 
 import { Button, Card, FormItem, Input, Modal, StatCard, Switch, Table, Textarea } from '../../../shared/components'
 import type { TableColumn } from '../../../shared/components/Table'
@@ -25,7 +25,6 @@ interface BrowserListHeaderProps {
   onToggleHeaderCollapsed: () => void
   onRefresh: () => void
   onOpenSettings: () => void
-  onOpenExpandModal: () => void
   onViewModeChange: (next: BrowserViewMode) => void
 }
 
@@ -44,7 +43,6 @@ export function BrowserListHeader({
   onToggleHeaderCollapsed,
   onRefresh,
   onOpenSettings,
-  onOpenExpandModal,
   onViewModeChange,
 }: BrowserListHeaderProps) {
   return (
@@ -70,14 +68,6 @@ export function BrowserListHeader({
           <Button variant="secondary" size="sm" onClick={onOpenSettings}>
             <Sliders className="w-4 h-4" />基础配置
           </Button>
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={onOpenExpandModal}
-            className="text-[var(--color-primary)] border-[var(--color-primary)] hover:bg-[var(--color-primary)]/10"
-          >
-            <Gift className="w-4 h-4" />扩容实例
-          </Button>
           <div className="flex items-center bg-[var(--color-bg-secondary)] rounded-md border border-[var(--color-border-default)] p-0.5 ml-2">
             <button
               className={`p-1.5 rounded text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors ${viewMode === 'card' ? 'bg-[var(--color-bg-surface)] shadow-sm text-[var(--color-accent)]' : ''}`}
@@ -98,6 +88,16 @@ export function BrowserListHeader({
           <Link to="/browser/edit/new">
             <Button size="sm">
               <Play className="w-4 h-4" />新建配置
+            </Button>
+          </Link>
+          <Link to="/browser/batch-create">
+            <Button variant="secondary" size="sm">
+              <Plus className="w-4 h-4" />批量创建
+            </Button>
+          </Link>
+          <Link to="/browser/templates">
+            <Button variant="secondary" size="sm">
+              <FileText className="w-4 h-4" />实例模板
             </Button>
           </Link>
         </div>

@@ -12,7 +12,7 @@ import (
 	"ant-chrome/backend/internal/config"
 )
 
-const DefaultIPHealthURL = "https://my.ippure.com/v1/info"
+const DefaultIPHealthURL = "https://www.cloudflare.com/cdn-cgi/trace"
 
 type IPHealthConfig struct {
 	URL     string
@@ -51,7 +51,7 @@ func FetchIPHealthInfo(
 		timeout = 20 * time.Second
 	}
 	source := resolveIPHealthSource(cfg, targetURL)
-	parser := resolveIPHealthParser(cfg.Parser)
+	parser := resolveIPHealthParser(cfg.Parser, targetURL)
 	meta := map[string]interface{}{
 		"_source":    source,
 		"_targetUrl": targetURL,
@@ -79,7 +79,11 @@ func FetchIPHealthInfo(
 		meta["error"] = err.Error()
 		return meta, fmt.Errorf("创建 IP 健康检测请求失败（source=%s）: %w", source, err)
 	}
-	req.Header.Set("Accept", "application/json")
+	if parser == "cloudflare_trace" {
+		req.Header.Set("Accept", "text/plain,*/*")
+	} else {
+		req.Header.Set("Accept", "application/json")
+	}
 	req.Header.Set("User-Agent", "AntChrome/1.0")
 
 	resp, err := client.Do(req)
@@ -104,7 +108,7 @@ func FetchIPHealthInfo(
 		return meta, fmt.Errorf("IP 健康检测 HTTP %d（source=%s）: %s", resp.StatusCode, source, snippet)
 	}
 
-	result, err := parseIPHealthBody(body, cfg.Parser)
+	result, err := parseIPHealthBody(body, parser)
 	if err != nil {
 		snippet := bodySnippet(body, 180)
 		meta["error"] = err.Error()
@@ -182,12 +186,18 @@ func resolveIPHealthSource(cfg *IPHealthConfig, targetURL string) string {
 	return "ip_health"
 }
 
-func resolveIPHealthParser(parser string) string {
+func resolveIPHealthParser(parser string, targetURL string) string {
 	normalized := strings.TrimSpace(parser)
-	if normalized == "" {
-		return "json"
+	if normalized != "" {
+		return normalized
 	}
-	return normalized
+	if parsed, err := url.Parse(strings.TrimSpace(targetURL)); err == nil {
+		host := strings.ToLower(strings.TrimSpace(parsed.Hostname()))
+		if host == "www.cloudflare.com" || host == "cloudflare.com" {
+			return "cloudflare_trace"
+		}
+	}
+	return "json"
 }
 
 func bodySnippet(body []byte, max int) string {

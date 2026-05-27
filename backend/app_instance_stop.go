@@ -18,9 +18,15 @@ func (a *App) BrowserInstanceStop(profileId string) (*BrowserProfile, error) {
 
 	cmd := a.browserMgr.BrowserProcesses[profileId]
 	debugPort := profile.DebugPort
-	if tryCloseBrowserViaCDP(debugPort, 5*time.Second) {
+	userDataDir := a.browserMgr.ResolveUserDataDir(profile)
+	_ = waitProfileStorageStable(userDataDir, 5*time.Second)
+	if debugPort > 0 && profile.DebugReady {
+		_, _ = cdpCall(debugPort, "Network.getAllCookies", nil)
+	}
+	if tryCloseBrowserViaCDP(debugPort, 20*time.Second) {
+		storageStable := waitProfileStorageStable(userDataDir, 30*time.Second)
 		a.markProfileStoppedLocked(profileId, profile)
-		log.Info("实例停止", logger.F("profile_id", profileId), logger.F("method", "cdp"), logger.F("debug_port", debugPort))
+		log.Info("实例停止", logger.F("profile_id", profileId), logger.F("method", "cdp"), logger.F("debug_port", debugPort), logger.F("storage_stable", storageStable))
 		return profile, nil
 	}
 
@@ -39,8 +45,9 @@ func (a *App) BrowserInstanceStop(profileId string) (*BrowserProfile, error) {
 		return profile, err
 	}
 
+	storageStable := waitProfileStorageStable(userDataDir, 30*time.Second)
 	a.markProfileStoppedLocked(profileId, profile)
-	log.Info("实例停止", logger.F("profile_id", profileId))
+	log.Info("实例停止", logger.F("profile_id", profileId), logger.F("storage_stable", storageStable))
 	return profile, nil
 }
 

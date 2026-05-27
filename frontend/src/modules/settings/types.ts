@@ -10,6 +10,7 @@ export interface AppSettings {
   theme: 'light' | 'dark' | 'system'
   primaryColor: string
   language: string
+  uiScale: number
 
   // 功能设置
   enableNotifications: boolean
@@ -33,6 +34,7 @@ export const defaultSettings: AppSettings = {
   theme: 'light',
   primaryColor: '#3B82F6',
   language: 'zh-CN',
+  uiScale: 100,
   enableNotifications: true,
   enableAutoSave: true,
   autoSaveInterval: 30,

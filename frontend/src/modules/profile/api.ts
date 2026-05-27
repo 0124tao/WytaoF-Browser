@@ -61,7 +61,7 @@ export async function loadProfilePageData(): Promise<ProfilePageData> {
       ...defaultData,
       meta: {
         source: 'default',
-        message: error?.message || '远程作者配置不可用，已切换为默认资料。',
+        message: error?.message || '远程个人资料配置不可用，已切换为默认资料。',
       },
     }
   }
@@ -95,18 +95,18 @@ async function fetchRemoteAuthorPayloadViaBrowser(authorURL: string, timeoutMs: 
     })
 
     if (!response.ok) {
-      throw new Error(`远程作者配置返回异常状态码: ${response.status}`)
+      throw new Error(`远程个人资料配置返回异常状态码: ${response.status}`)
     }
 
     const payload = await response.json()
     if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
-      throw new Error('远程作者配置格式无效')
+      throw new Error('远程个人资料配置格式无效')
     }
 
     return payload as Record<string, any>
   } catch (error: any) {
     if (error?.name === 'AbortError') {
-      throw new Error('远程作者配置请求超时')
+      throw new Error('远程个人资料配置请求超时')
     }
     throw error
   } finally {

@@ -135,9 +135,9 @@ export function Topbar() {
   }, [])
 
   return (
-    <header className="h-14 bg-[var(--color-bg-surface)] border-b border-[var(--color-border-default)] px-4 flex items-center justify-between gap-4">
+    <header className="app-topbar h-14 bg-[var(--color-bg-surface)] border-b border-[var(--color-border-default)] px-4 flex items-center justify-between gap-4">
       {/* 搜索框 - 固定宽度，不随容器拉伸 */}
-      <div className="w-64">
+      <div className="app-topbar-search w-64">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-muted)]" />
           <input
@@ -149,10 +149,10 @@ export function Topbar() {
       </div>
 
       {/* 中间留白 */}
-      <div className="flex-1" />
+      <div className="app-topbar-spacer flex-1" />
 
       {/* 右侧操作 */}
-      <div className="flex items-center gap-1">
+      <div className="app-topbar-actions flex items-center gap-1">
         {/* 通知按钮 */}
         <div className="relative" ref={dropdownRef}>
           <button
@@ -203,7 +203,7 @@ export function Topbar() {
           <div className="w-7 h-7 bg-[var(--color-accent)] rounded-md flex items-center justify-center">
             <User className="w-3.5 h-3.5 text-[var(--color-text-inverse)]" />
           </div>
-          <span className="text-sm font-medium text-[var(--color-text-secondary)]">Admin</span>
+          <span className="text-sm font-medium text-[var(--color-text-secondary)]">个人自用</span>
         </Link>
       </div>
     </header>

@@ -140,6 +140,7 @@ echo Asset source: frontend\dist
 echo Auto reload: disabled
 echo.
 
+set "ANT_BROWSER_USE_CWD_ROOT=1"
 wails dev -m -nogorebuild -noreload -s -skipbindings -assetdir frontend/dist
 set "EXIT_CODE=%errorlevel%"
 
@@ -235,6 +236,7 @@ echo Starting Wails dev...
 echo Frontend URL: http://127.0.0.1:%FRONTEND_PORT%
 echo.
 
+set "ANT_BROWSER_USE_CWD_ROOT=1"
 wails dev -m -s -skipbindings -frontenddevserverurl http://127.0.0.1:%FRONTEND_PORT% -viteservertimeout 60
 set "EXIT_CODE=%errorlevel%"
 

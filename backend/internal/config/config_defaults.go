@@ -9,6 +9,37 @@ import (
 
 var defaultBrowserStartURLs = []string{}
 
+func DefaultProxyCheckTargets() []ProxyCheckTarget {
+	return []ProxyCheckTarget{
+		{
+			ID:             "google_204",
+			Name:           "Google 204",
+			Type:           "speed",
+			URL:            "http://www.gstatic.com/generate_204",
+			TimeoutMs:      10000,
+			ExpectedStatus: []int{204},
+		},
+		{
+			ID:             "cf_trace",
+			Name:           "Cloudflare Trace",
+			Type:           "ip_health",
+			URL:            "https://www.cloudflare.com/cdn-cgi/trace",
+			Parser:         "cloudflare_trace",
+			TimeoutMs:      20000,
+			ExpectedStatus: []int{200},
+		},
+		{
+			ID:             "ippure_json",
+			Name:           "IPPure JSON",
+			Type:           "ip_health",
+			URL:            "https://my.ippure.com/v1/info",
+			Parser:         "json",
+			TimeoutMs:      20000,
+			ExpectedStatus: []int{200},
+		},
+	}
+}
+
 func DefaultBrowserStartURLs() []string {
 	return append([]string{}, defaultBrowserStartURLs...)
 }
@@ -138,7 +169,7 @@ func normalizeConfig(config *Config) {
 		config.ProxyCheck.IPHealthTargetID = defaultConfig.ProxyCheck.IPHealthTargetID
 	}
 	if len(config.ProxyCheck.Targets) == 0 {
-		config.ProxyCheck.Targets = append([]ProxyCheckTarget{}, defaultConfig.ProxyCheck.Targets...)
+		config.ProxyCheck.Targets = DefaultProxyCheckTargets()
 	}
 
 	if config.LaunchServer.Port <= 0 {
@@ -233,15 +264,15 @@ func DefaultConfig() *Config {
 			DefaultFingerprintArgs: defaultFingerprintArgsForOS(goruntime.GOOS),
 			DefaultLaunchArgs:      []string{"--disable-sync", "--no-first-run"},
 			DefaultStartURLs:       DefaultBrowserStartURLs(),
-			RestoreLastSession:     false,
+			RestoreLastSession:     true,
 			StartReadyTimeoutMs:    3000,
 			StartStableWindowMs:    1200,
 		},
 		ProxyCheck: ProxyCheckConfig{
 			BridgeStartTimeoutMs: 15000,
-			SpeedTargetID:        "",
-			IPHealthTargetID:     "",
-			Targets:              []ProxyCheckTarget{},
+			SpeedTargetID:        "google_204",
+			IPHealthTargetID:     "cf_trace",
+			Targets:              DefaultProxyCheckTargets(),
 		},
 		Logging: LoggingConfig{
 			Level:           "info",

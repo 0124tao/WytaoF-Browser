@@ -8,7 +8,7 @@
 export const projectConfig = {
   name: 'WytaoF Browser',
   shortName: 'WytaoF',
-  description: '面向多账号隔离、代理绑定和本地指纹环境管理的桌面浏览器工具',
+  description: '个人自用版本地指纹浏览器环境管理工具',
   primaryColor: 'primary',
 }
 

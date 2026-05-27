@@ -40,6 +40,57 @@ export interface BrowserProfileInput {
   groupId?: string
 }
 
+export interface BrowserProfileTemplate {
+  templateId: string
+  templateName: string
+  profileName: string
+  userDataDir: string
+  coreId: string
+  fingerprintArgs: string[]
+  proxyId: string
+  proxyConfig: string
+  launchArgs: string[]
+  tags: string[]
+  keywords: string[]
+  groupId?: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface BrowserProfileTemplateInput {
+  templateName: string
+  profileName: string
+  userDataDir: string
+  coreId: string
+  fingerprintArgs: string[]
+  proxyId: string
+  proxyConfig: string
+  launchArgs: string[]
+  tags: string[]
+  keywords: string[]
+  groupId?: string
+}
+
+export interface BrowserProfileBatchCreateInput {
+  count: number
+  base: BrowserProfileInput
+  randomizeFingerprintPerProfile?: boolean
+}
+
+export interface BrowserProfileBatchCreateItemResult {
+  index: number
+  profileName: string
+  profile?: BrowserProfile
+  error?: string
+}
+
+export interface BrowserProfileBatchCreateResult {
+  total: number
+  succeeded: number
+  failed: number
+  items: BrowserProfileBatchCreateItemResult[]
+}
+
 export interface BrowserTab {
   tabId: string
   title: string

@@ -51,6 +51,57 @@ type ProfileInput struct {
 	GroupId         string   `json:"groupId"` // 所属分组ID
 }
 
+type ProfileTemplate struct {
+	TemplateId      string   `json:"templateId"`
+	TemplateName    string   `json:"templateName"`
+	ProfileName     string   `json:"profileName"`
+	UserDataDir     string   `json:"userDataDir"`
+	CoreId          string   `json:"coreId"`
+	FingerprintArgs []string `json:"fingerprintArgs"`
+	ProxyId         string   `json:"proxyId"`
+	ProxyConfig     string   `json:"proxyConfig"`
+	LaunchArgs      []string `json:"launchArgs"`
+	Tags            []string `json:"tags"`
+	Keywords        []string `json:"keywords"`
+	GroupId         string   `json:"groupId"`
+	CreatedAt       string   `json:"createdAt"`
+	UpdatedAt       string   `json:"updatedAt"`
+}
+
+type ProfileTemplateInput struct {
+	TemplateName    string   `json:"templateName"`
+	ProfileName     string   `json:"profileName"`
+	UserDataDir     string   `json:"userDataDir"`
+	CoreId          string   `json:"coreId"`
+	FingerprintArgs []string `json:"fingerprintArgs"`
+	ProxyId         string   `json:"proxyId"`
+	ProxyConfig     string   `json:"proxyConfig"`
+	LaunchArgs      []string `json:"launchArgs"`
+	Tags            []string `json:"tags"`
+	Keywords        []string `json:"keywords"`
+	GroupId         string   `json:"groupId"`
+}
+
+type ProfileBatchCreateInput struct {
+	Count                          int          `json:"count"`
+	Base                           ProfileInput `json:"base"`
+	RandomizeFingerprintPerProfile bool         `json:"randomizeFingerprintPerProfile"`
+}
+
+type ProfileBatchCreateItemResult struct {
+	Index       int      `json:"index"`
+	ProfileName string   `json:"profileName"`
+	Profile     *Profile `json:"profile,omitempty"`
+	Error       string   `json:"error,omitempty"`
+}
+
+type ProfileBatchCreateResult struct {
+	Total     int                            `json:"total"`
+	Succeeded int                            `json:"succeeded"`
+	Failed    int                            `json:"failed"`
+	Items     []ProfileBatchCreateItemResult `json:"items"`
+}
+
 // Tab 浏览器标签页
 type Tab struct {
 	TabId  string `json:"tabId"`
@@ -142,6 +193,7 @@ type Manager struct {
 	CoreDAO     CoreDAO
 	BookmarkDAO BookmarkDAO
 	GroupDAO    GroupDAO
+	TemplateDAO ProfileTemplateDAO
 }
 
 // XrayBridge Xray 桥接进程

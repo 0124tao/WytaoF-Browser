@@ -115,6 +115,8 @@ export function BrowserInstanceStatus(arg1:string):Promise<browser.Profile>;
 
 export function BrowserInstanceStop(arg1:string):Promise<browser.Profile>;
 
+export function BrowserProfileBatchCreate(arg1:browser.ProfileBatchCreateInput):Promise<browser.ProfileBatchCreateResult>;
+
 export function BrowserProfileBatchRemoveTags(arg1:Array<string>,arg2:Array<string>):Promise<void>;
 
 export function BrowserProfileBatchSetTags(arg1:Array<string>,arg2:Array<string>,arg3:boolean):Promise<void>;
@@ -136,6 +138,14 @@ export function BrowserProfileRegenerateCode(arg1:string):Promise<string>;
 export function BrowserProfileSetCode(arg1:string,arg2:string):Promise<string>;
 
 export function BrowserProfileSetKeywords(arg1:string,arg2:Array<string>):Promise<browser.Profile>;
+
+export function BrowserProfileTemplateCreate(arg1:browser.ProfileTemplateInput):Promise<browser.ProfileTemplate>;
+
+export function BrowserProfileTemplateDelete(arg1:string):Promise<void>;
+
+export function BrowserProfileTemplateList():Promise<Array<browser.ProfileTemplate>>;
+
+export function BrowserProfileTemplateUpdate(arg1:string,arg2:browser.ProfileTemplateInput):Promise<browser.ProfileTemplate>;
 
 export function BrowserProfileUpdate(arg1:string,arg2:browser.ProfileInput):Promise<browser.Profile>;
 

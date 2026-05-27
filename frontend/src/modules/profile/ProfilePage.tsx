@@ -141,50 +141,52 @@ export function ProfilePage() {
         </div>
       </Card>
 
-      <div className="grid gap-4 md:grid-cols-3">
-        {authorInfo.channels.map((channel) => {
-          const Icon = getIcon(channel.icon)
-          const iconClassName = CHANNEL_ICON_CLASS[channel.icon || 'globe'] || 'text-[var(--color-text-primary)]'
-          const content = (
-            <Card
-              className="h-full rounded-[22px] border-[var(--color-border-default)] transition-all duration-200 hover:-translate-y-0.5 hover:border-[var(--color-border-strong)] hover:shadow-[var(--shadow-md)]"
-              padding="lg"
-            >
-              <div className="flex items-center justify-between gap-4">
-                <div className="flex items-center gap-5">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--color-bg-muted)]">
-                    <Icon className={`h-5 w-5 ${iconClassName}`} />
+      {authorInfo.channels.length > 0 ? (
+        <div className="grid gap-4 md:grid-cols-3">
+          {authorInfo.channels.map((channel) => {
+            const Icon = getIcon(channel.icon)
+            const iconClassName = CHANNEL_ICON_CLASS[channel.icon || 'globe'] || 'text-[var(--color-text-primary)]'
+            const content = (
+              <Card
+                className="h-full rounded-[22px] border-[var(--color-border-default)] transition-all duration-200 hover:-translate-y-0.5 hover:border-[var(--color-border-strong)] hover:shadow-[var(--shadow-md)]"
+                padding="lg"
+              >
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-5">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--color-bg-muted)]">
+                      <Icon className={`h-5 w-5 ${iconClassName}`} />
+                    </div>
+                    <div className="space-y-1 text-left">
+                      <p className="text-[28px] font-bold leading-none text-[var(--color-text-primary)]">
+                        {channel.name}
+                      </p>
+                      <p className="text-sm text-[var(--color-text-muted)]">{channel.description}</p>
+                      <p className="text-xs text-[var(--color-text-secondary)]">{channel.detail}</p>
+                    </div>
                   </div>
-                  <div className="space-y-1 text-left">
-                    <p className="text-[28px] font-bold leading-none text-[var(--color-text-primary)]">
-                      {channel.name}
-                    </p>
-                    <p className="text-sm text-[var(--color-text-muted)]">{channel.description}</p>
-                    <p className="text-xs text-[var(--color-text-secondary)]">{channel.detail}</p>
-                  </div>
+                  {channel.href ? <ExternalLink className="h-4 w-4 shrink-0 text-[var(--color-text-muted)]" /> : null}
                 </div>
-                {channel.href ? <ExternalLink className="h-4 w-4 shrink-0 text-[var(--color-text-muted)]" /> : null}
-              </div>
-            </Card>
-          )
+              </Card>
+            )
 
-          if (!channel.href) {
-            return <div key={channel.name}>{content}</div>
-          }
+            if (!channel.href) {
+              return <div key={channel.name}>{content}</div>
+            }
 
-          return (
-            <a
-              key={channel.name}
-              href={channel.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block h-full"
-            >
-              {content}
-            </a>
-          )
-        })}
-      </div>
+            return (
+              <a
+                key={channel.name}
+                href={channel.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block h-full"
+              >
+                {content}
+              </a>
+            )
+          })}
+        </div>
+      ) : null}
 
       <Card
         title="技术栈"

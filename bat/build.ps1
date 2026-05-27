@@ -106,8 +106,6 @@ try {
     Write-Host "[4/7] Generating Wails bindings..."
     Invoke-NativeCommand -FilePath "cmd" -Arguments @("/c", "call bat\generate-bindings.bat --no-pause")
 
-    $binaryPath = Join-Path $repoRoot "build/bin/wytaof-browser.exe"
-
     Write-Host ""
     Write-Host "[5/7] Building frontend..."
     if ($tempDistCreated -and (Test-Path -LiteralPath $frontendDist)) {
@@ -131,13 +129,36 @@ try {
 
     Write-Host ""
     Write-Host "[7/7] Copying runtime dependencies..."
+    $buildBinDir = Join-Path $repoRoot "build/bin"
     $binDir = Join-Path $repoRoot "bin"
-    $targetDir = Join-Path $repoRoot "build/bin/bin"
+    $targetDir = Join-Path $buildBinDir "bin"
     if (Test-Path -LiteralPath $binDir -PathType Container) {
         Copy-Item -LiteralPath $binDir -Destination $targetDir -Recurse -Force
         Write-Host "OK copied bin directory to build\bin\bin\"
     } else {
         Write-Host "[WARN] bin directory not found, skipping copy"
+    }
+    $configPath = Join-Path $repoRoot "config.yaml"
+    $targetConfigPath = Join-Path $buildBinDir "config.yaml"
+    if (Test-Path -LiteralPath $configPath -PathType Leaf) {
+        Copy-Item -LiteralPath $configPath -Destination $targetConfigPath -Force
+        Write-Host "OK copied config.yaml to build\bin\config.yaml"
+    } else {
+        Write-Host "[WARN] config.yaml not found, skipping copy"
+    }
+    $chromeDir = Join-Path $repoRoot "chrome"
+    $targetChromeDir = Join-Path $buildBinDir "chrome"
+    if (Test-Path -LiteralPath $chromeDir -PathType Container) {
+        if (Test-Path -LiteralPath $targetChromeDir) {
+            Remove-Item -LiteralPath $targetChromeDir -Recurse -Force
+        }
+        & cmd /c mklink /J "$targetChromeDir" "$chromeDir" | Out-Null
+        if ($LASTEXITCODE -ne 0) {
+            throw "Failed to create chrome junction in build\bin"
+        }
+        Write-Host "OK linked chrome directory to build\bin\chrome"
+    } else {
+        Write-Host "[WARN] chrome directory not found, skipping link"
     }
 
     Write-Host ""

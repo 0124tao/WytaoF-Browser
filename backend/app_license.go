@@ -133,7 +133,7 @@ func (a *App) RedeemGithubStar() error {
 	return nil
 }
 
-// GenerateCDKeys 供内部隐藏管理员页面使用的发卡器接口
+// GenerateCDKeys 供内部个人自用页面使用的发卡器接口
 func (a *App) GenerateCDKeys(count int) ([]string, error) {
 	if count <= 0 || count > 1000 {
 		return nil, fmt.Errorf("生成数量无效 (1-1000)")

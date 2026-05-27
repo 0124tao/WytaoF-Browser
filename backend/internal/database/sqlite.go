@@ -142,6 +142,29 @@ var migrations = []migration{
 			`ALTER TABLE browser_bookmarks ADD COLUMN open_on_start INTEGER NOT NULL DEFAULT 0`,
 		},
 	},
+	{
+		version: 8,
+		desc:    "添加实例创建模板",
+		stmts: []string{
+			`CREATE TABLE IF NOT EXISTS browser_profile_templates (
+				template_id      TEXT PRIMARY KEY,
+				template_name    TEXT NOT NULL,
+				profile_name     TEXT NOT NULL DEFAULT '',
+				user_data_dir    TEXT NOT NULL DEFAULT '',
+				core_id          TEXT NOT NULL DEFAULT '',
+				fingerprint_args TEXT NOT NULL DEFAULT '[]',
+				proxy_id         TEXT NOT NULL DEFAULT '',
+				proxy_config     TEXT NOT NULL DEFAULT '',
+				launch_args      TEXT NOT NULL DEFAULT '[]',
+				tags             TEXT NOT NULL DEFAULT '[]',
+				keywords         TEXT NOT NULL DEFAULT '[]',
+				group_id         TEXT NOT NULL DEFAULT '',
+				created_at       DATETIME NOT NULL,
+				updated_at       DATETIME NOT NULL
+			)`,
+			`CREATE INDEX IF NOT EXISTS idx_browser_profile_templates_created_at ON browser_profile_templates(created_at)`,
+		},
+	},
 	// ── 新版本在此追加，格式：
 	// {
 	//     version: 4,

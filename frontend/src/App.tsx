@@ -112,6 +112,14 @@ const BrowserCopyPage = lazyNamed(
   () => import("./modules/browser/pages/BrowserCopyPage"),
   "BrowserCopyPage",
 );
+const BrowserBatchCreatePage = lazyNamed(
+  () => import("./modules/browser/pages/BrowserBatchCreatePage"),
+  "BrowserBatchCreatePage",
+);
+const BrowserTemplatePage = lazyNamed(
+  () => import("./modules/browser/pages/BrowserTemplatePage"),
+  "BrowserTemplatePage",
+);
 const BrowserLogsPage = lazyNamed(
   () => import("./modules/browser/pages/BrowserLogsPage"),
   "BrowserLogsPage",
@@ -412,6 +420,8 @@ function App() {
               />
               <Route path="/browser/edit/:id" element={<BrowserEditPage />} />
               <Route path="/browser/copy/:id" element={<BrowserCopyPage />} />
+              <Route path="/browser/batch-create" element={<BrowserBatchCreatePage />} />
+              <Route path="/browser/templates" element={<BrowserTemplatePage />} />
               <Route
                 path="/browser/monitor"
                 element={<Navigate to="/browser/list" replace />}

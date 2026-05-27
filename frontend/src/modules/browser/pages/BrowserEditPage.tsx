@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { FolderOpen, Layers } from 'lucide-react'
 import { Button, Card, ConfirmModal, FormItem, Input, Modal, Select, Textarea, toast } from '../../../shared/components'
-import type { BrowserCore, BrowserProfileInput, BrowserProxy, BrowserGroup } from '../types'
-import { createBrowserProfile, fetchAllTags, fetchBrowserCores, fetchBrowserProfiles, fetchBrowserProxies, fetchBrowserSettings, fetchGroups, openUserDataDir, updateBrowserProfile } from '../api'
+import type { BrowserCore, BrowserProfileInput, BrowserProxy, BrowserGroup, BrowserProfileTemplate } from '../types'
+import { createBrowserProfile, fetchAllTags, fetchBrowserCores, fetchBrowserProfileTemplates, fetchBrowserProfiles, fetchBrowserProxies, fetchBrowserSettings, fetchGroups, openUserDataDir, updateBrowserProfile } from '../api'
 import { FingerprintPanel } from '../components/FingerprintPanel'
 import { TagInput } from '../components/TagInput'
 import { GroupSelector } from '../components/GroupSelector'
@@ -67,6 +67,8 @@ export function BrowserEditPage() {
   const [cores, setCores] = useState<BrowserCore[]>([])
   const [proxies, setProxies] = useState<BrowserProxy[]>([])
   const [groups, setGroups] = useState<BrowserGroup[]>([])
+  const [templates, setTemplates] = useState<BrowserProfileTemplate[]>([])
+  const [selectedTemplateId, setSelectedTemplateId] = useState('')
   const [launchArgsText, setLaunchArgsText] = useState('')
   const [allTags, setAllTags] = useState<string[]>([])
   const [saving, setSaving] = useState(false)
@@ -77,18 +79,20 @@ export function BrowserEditPage() {
 
   useEffect(() => {
     const loadData = async () => {
-      const [coreList, proxyList, tagList, groupList, settings] = await Promise.all([
+      const [coreList, proxyList, tagList, groupList, settings, templateList] = await Promise.all([
         fetchBrowserCores(),
         fetchBrowserProxies(),
         fetchAllTags(),
         fetchGroups(),
         fetchBrowserSettings(),
+        fetchBrowserProfileTemplates(),
       ])
       const resolvedDefaultLaunchArgs = resolveDefaultLaunchArgs(settings.defaultLaunchArgs || [])
       setCores(coreList)
       setProxies(proxyList)
       setAllTags(tagList)
       setGroups(groupList)
+      setTemplates(templateList)
 
       if (isCreate) {
         const resolved = resolvePoolProxySelection('', '', proxyList)
@@ -129,6 +133,26 @@ export function BrowserEditPage() {
       }
       return { ...prev, [field]: value }
     })
+  }
+
+  const handleTemplateChange = (templateId: string) => {
+    setSelectedTemplateId(templateId)
+    const template = templates.find(item => item.templateId === templateId)
+    if (!template) return
+    setIsDirty(true)
+    setFormData({
+      profileName: template.profileName || template.templateName,
+      userDataDir: template.userDataDir || '',
+      coreId: template.coreId || '',
+      fingerprintArgs: template.fingerprintArgs || [],
+      proxyId: template.proxyId || directProxyID,
+      proxyConfig: template.proxyConfig || '',
+      launchArgs: template.launchArgs || [],
+      tags: template.tags || [],
+      keywords: template.keywords || [],
+      groupId: template.groupId || '',
+    })
+    setLaunchArgsText(normalizeLaunchArgs(template.launchArgs || []).join('\n'))
   }
 
   const handleSave = async () => {
@@ -214,6 +238,21 @@ export function BrowserEditPage() {
           <Button size="sm" onClick={handleSave} loading={saving}>保存配置</Button>
         </div>
       </div>
+
+      {isCreate && (
+        <Card title="实例模板" subtitle="选择模板后会自动填充配置，保存前仍可继续修改">
+          <FormItem label="选择模板">
+            <Select
+              value={selectedTemplateId}
+              onChange={e => handleTemplateChange(e.target.value)}
+              options={[
+                { value: '', label: '不使用模板' },
+                ...templates.map(item => ({ value: item.templateId, label: item.templateName })),
+              ]}
+            />
+          </FormItem>
+        </Card>
+      )}
 
       <Card title="基础信息" subtitle="实例与配置名称">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

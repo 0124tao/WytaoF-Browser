@@ -45,7 +45,7 @@ browser:
         - --disable-sync
         - --no-first-run
     default_start_urls: []
-    restore_last_session: false
+    restore_last_session: true
     start_ready_timeout_ms: 3000
     start_stable_window_ms: 1200
 proxy_check:
