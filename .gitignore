@@ -75,6 +75,9 @@ config.yaml.broken-*
 proxies.yaml
 profiles.yaml
 
+# Stray browser profile directories (created accidentally by external scripts running in repo root)
+chatgpt_profiles/
+
 # Frontend deps/cache
 frontend/node_modules/
 frontend/dist/
