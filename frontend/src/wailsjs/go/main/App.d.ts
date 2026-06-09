@@ -73,6 +73,8 @@ export function BookmarkSave(arg1:Array<config.BrowserBookmark>):Promise<void>;
 
 export function BookmarkSyncToProfiles():Promise<backend.BookmarkSyncResult>;
 
+export function BrowseDataStorageDirectory():Promise<string>;
+
 export function BrowserClearCookies(arg1:string):Promise<void>;
 
 export function BrowserCoreDelete(arg1:string):Promise<void>;
@@ -197,6 +199,8 @@ export function GetBrowserSettings():Promise<browser.Settings>;
 
 export function GetDashboardStats():Promise<Record<string, any>>;
 
+export function GetDataStoragePath():Promise<string>;
+
 export function GetInterceptor():Promise<logger.MethodInterceptor>;
 
 export function GetLaunchServerInfo():Promise<Record<string, any>>;
@@ -242,6 +246,8 @@ export function SaveBrowserProxies(arg1:Array<config.BrowserProxy>):Promise<void
 export function SaveBrowserSettings(arg1:browser.Settings):Promise<void>;
 
 export function SaveProxyCheckSettings(arg1:config.ProxyCheckConfig):Promise<void>;
+
+export function SetDataStoragePath(arg1:string):Promise<void>;
 
 export function SetLogLevel(arg1:string):Promise<void>;
 

@@ -6,8 +6,16 @@ import {
 } from "react";
 import { useNavigate } from "react-router-dom";
 import {
+  ArrowUpDown,
+  CheckSquare,
+  Copy,
+  Download,
   History,
+  Play,
   PlusSquare,
+  Search,
+  Square,
+  Trash2,
   Upload,
   Wrench,
 } from "lucide-react";
@@ -25,6 +33,8 @@ import { AutomationScriptRunModal } from "../components/AutomationScriptRunModal
 import { AutomationToolboxModal } from "../components/AutomationToolboxModal";
 import { fetchBrowserProfiles } from "../api";
 import {
+  deleteAutomationScript,
+  exportAutomationScriptTemplate,
   fetchAutomationScripts,
   importAutomationScriptFromGit,
   importAutomationScriptFromLocalDirectory,
@@ -36,6 +46,7 @@ import {
 import {
   AUTOMATION_SCRIPT_TYPE_OPTIONS,
   createAutomationScriptDraft,
+  duplicateAutomationScript,
   findAutomationTargetProfile,
   type AutomationScriptRecord,
   type AutomationScriptType,
@@ -52,6 +63,8 @@ type DualLaunchCodes = {
   secondaryCode: string;
 };
 
+type SortMode = "updated" | "name" | "type";
+
 type AutomationCardPresentation = {
   key: string;
   title: string;
@@ -59,6 +72,7 @@ type AutomationCardPresentation = {
   modeLabel: string;
   description: string;
   codeDisplay: string;
+  status: string;
   primaryActionLabel: string;
   primaryActionText: string;
   primaryActionSuccessMessage: string;
@@ -87,17 +101,36 @@ function ScriptCardField({
   );
 }
 
+function getStatusBadge(status: string) {
+  switch (status) {
+    case "ready":
+      return { label: "就绪", className: "bg-emerald-100 text-emerald-700 border-emerald-200" };
+    case "disabled":
+      return { label: "禁用", className: "bg-gray-100 text-gray-500 border-gray-200" };
+    case "draft":
+    default:
+      return { label: "草稿", className: "bg-amber-50 text-amber-700 border-amber-200" };
+  }
+}
+
 function AutomationScriptSummaryCard({
   card,
   onOpen,
   onRun,
+  onDuplicate,
+  onDelete,
+  onExport,
 }: {
   card: AutomationCardPresentation;
   onOpen?: () => void;
   onRun?: () => void;
+  onDuplicate?: () => void;
+  onDelete?: () => void;
+  onExport?: () => void;
 }) {
   const interactive = typeof onOpen === "function";
-  const actionCount = 2 + (interactive ? 1 : 0) + (onRun ? 1 : 0);
+  const actionCount = 2 + (interactive ? 1 : 0) + (onRun ? 1 : 0) + (onDuplicate ? 1 : 0) + (onExport ? 1 : 0) + (onDelete ? 1 : 0);
+  const badge = getStatusBadge(card.status);
   const headerPrimaryButtonClassName =
     "!h-8 !w-full whitespace-nowrap !rounded-xl !border !border-[var(--color-accent)] !bg-[var(--color-accent)] !px-2 !text-[11px] !font-semibold !text-[var(--color-text-inverse)] !shadow-[var(--shadow-sm)] hover:!bg-[var(--color-accent-hover)] hover:!border-[var(--color-accent-hover)] focus-visible:!ring-[var(--color-accent)]";
   const headerSecondaryCopyButtonClassName =
@@ -207,11 +240,67 @@ function AutomationScriptSummaryCard({
                 执行
               </Button>
             ) : null}
+            {typeof onDuplicate === "function" ? (
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                className={headerSecondaryCopyButtonClassName}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onDuplicate();
+                }}
+                aria-label={`复制 ${card.title}`}
+                title="复制脚本"
+              >
+                <Copy className="mr-0.5 h-3 w-3" />
+                复制
+              </Button>
+            ) : null}
+            {typeof onExport === "function" ? (
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                className={headerSecondaryCopyButtonClassName}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onExport();
+                }}
+                aria-label={`导出 ${card.title}`}
+                title="导出脚本模板"
+              >
+                <Download className="mr-0.5 h-3 w-3" />
+                导出
+              </Button>
+            ) : null}
+            {typeof onDelete === "function" ? (
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                className="!h-8 !w-full whitespace-nowrap !rounded-xl !border !border-red-300 !bg-red-50 !px-2 !text-[11px] !font-semibold !text-red-700 !shadow-[var(--shadow-sm)] hover:!border-red-400 hover:!bg-red-100 focus-visible:!ring-red-400"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onDelete();
+                }}
+                aria-label={`删除 ${card.title}`}
+                title="删除脚本"
+              >
+                <Trash2 className="mr-0.5 h-3 w-3" />
+                删除
+              </Button>
+            ) : null}
           </div>
         </div>
       </div>
 
-      <div className="mt-3 grid items-stretch grid-cols-1 gap-2.5 md:grid-cols-[100px_minmax(0,1fr)]">
+      <div className="mt-3 grid items-stretch grid-cols-1 gap-2.5 md:grid-cols-[80px_80px_minmax(0,1fr)]">
+        <ScriptCardField label="状态">
+          <span className={`inline-flex items-center rounded-md border px-1.5 py-0.5 text-[10px] font-semibold leading-none ${badge.className}`}>
+            {badge.label}
+          </span>
+        </ScriptCardField>
         <ScriptCardField label="类型">
           <span className="inline-flex items-center gap-1.5">
             <span className={`h-1.5 w-1.5 rounded-full ${card.modeToneClass}`} />
@@ -521,6 +610,7 @@ function buildAutomationCardPresentation(options: {
       options.profiles,
       options.dualLaunchCodes,
     ),
+    status: script.status,
     primaryActionLabel:
       cardMode === "skill" ? "复制Skill提示词" : "复制模拟cURL",
     primaryActionText:
@@ -547,6 +637,7 @@ function buildDualInstanceFallbackPresentation(options: {
     modeLabel: "接口模式",
     description: "启动双实例并切换 Runtime",
     codeDisplay: `${options.dualLaunchCodes.primaryCode} / ${options.dualLaunchCodes.secondaryCode}`,
+    status: "ready",
     primaryActionLabel: "复制模拟cURL",
     primaryActionText: options.dualInstanceRunCurlDemo,
     primaryActionSuccessMessage: "模拟 cURL 已复制",
@@ -629,6 +720,10 @@ export function AutomationPage() {
   const [busyAction, setBusyAction] = useState<"none" | "create" | "import">(
     "none",
   );
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortMode, setSortMode] = useState<SortMode>("updated");
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [batchRunning, setBatchRunning] = useState(false);
 
   useEffect(() => {
     let disposed = false;
@@ -680,6 +775,116 @@ export function AutomationPage() {
   const handleOpenRunModal = (script: AutomationScriptRecord) => {
     setActiveRunScript(script);
     setRunModalOpen(true);
+  };
+
+  const handleDuplicate = async (script: AutomationScriptRecord) => {
+    try {
+      const draft = duplicateAutomationScript(script);
+      const saved = await saveAutomationScript(draft);
+      setScripts((current) => [saved, ...current]);
+      toast.success(`脚本「${script.name}」已复制`);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "复制失败";
+      toast.error(message);
+    }
+  };
+
+  const handleDelete = async (script: AutomationScriptRecord) => {
+    if (!window.confirm(`确认删除脚本「${script.name}」？此操作不可撤销。`)) {
+      return;
+    }
+    try {
+      await deleteAutomationScript(script.id);
+      setScripts((current) => current.filter((item) => item.id !== script.id));
+      toast.success(`脚本「${script.name}」已删除`);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "删除失败";
+      toast.error(message);
+    }
+  };
+
+  const handleExport = async (script: AutomationScriptRecord) => {
+    try {
+      const result = await exportAutomationScriptTemplate(script.id, script);
+      if (!result.cancelled) {
+        toast.success(result.message || "脚本模板已导出");
+      }
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "导出失败";
+      toast.error(message);
+    }
+  };
+
+  const toggleSelect = (scriptId: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(scriptId)) {
+        next.delete(scriptId);
+      } else {
+        next.add(scriptId);
+      }
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    const runnableIds = filteredScripts.map((s) => s.id);
+    const allSelected = runnableIds.every((id) => selectedIds.has(id));
+    if (allSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(runnableIds));
+    }
+  };
+
+  const handleBatchRun = async () => {
+    const targets = scripts.filter((s) => selectedIds.has(s.id));
+    if (targets.length === 0) return;
+    if (!window.confirm(`确认批量执行 ${targets.length} 个脚本？`)) return;
+    setBatchRunning(true);
+    let successCount = 0;
+    let failCount = 0;
+    for (const script of targets) {
+      try {
+        const { runAutomationScript } = await import("../automationScriptApi");
+        await runAutomationScript({
+          scriptId: script.id,
+          selectorText: "",
+          paramsText: "",
+          useScriptSelector: true,
+          useScriptParams: true,
+          timeoutMs: 0,
+          launchCode: "",
+          startByCodeBeforeRun: false,
+        });
+        successCount++;
+      } catch {
+        failCount++;
+      }
+    }
+    setBatchRunning(false);
+    setSelectedIds(new Set());
+    if (failCount === 0) {
+      toast.success(`批量执行完成：${successCount} 个全部成功`);
+    } else {
+      toast.error(`批量执行完成：${successCount} 成功，${failCount} 失败`);
+    }
+  };
+
+  const handleBatchDelete = async () => {
+    const targets = scripts.filter((s) => selectedIds.has(s.id));
+    if (targets.length === 0) return;
+    if (!window.confirm(`确认批量删除 ${targets.length} 个脚本？此操作不可撤销。`)) return;
+    let deleted = 0;
+    for (const script of targets) {
+      try {
+        await deleteAutomationScript(script.id);
+        deleted++;
+      } catch { /* continue */ }
+    }
+    setScripts((current) => current.filter((item) => !selectedIds.has(item.id)));
+    setSelectedIds(new Set());
+    toast.success(`已删除 ${deleted} 个脚本`);
   };
 
   const resetCreateModal = () => {
@@ -812,14 +1017,29 @@ export function AutomationPage() {
   const hasDualInstanceBaseline = scripts.some(
     (item) => item.id === DUAL_INSTANCE_SCRIPT_ID,
   );
-  const orderedScripts = [...scripts].sort((left, right) => {
-    if (left.id === DUAL_INSTANCE_SCRIPT_ID) {
-      return -1;
+  const filteredScripts = scripts.filter((script) => {
+    if (!searchQuery.trim()) return true;
+    const q = searchQuery.trim().toLowerCase();
+    return (
+      script.name.toLowerCase().includes(q) ||
+      script.description.toLowerCase().includes(q) ||
+      script.id.toLowerCase().includes(q) ||
+      script.tags.some((tag) => tag.toLowerCase().includes(q))
+    );
+  });
+
+  const orderedScripts = [...filteredScripts].sort((left, right) => {
+    if (left.id === DUAL_INSTANCE_SCRIPT_ID) return -1;
+    if (right.id === DUAL_INSTANCE_SCRIPT_ID) return 1;
+    switch (sortMode) {
+      case "name":
+        return left.name.localeCompare(right.name, "zh-CN");
+      case "type":
+        return left.type.localeCompare(right.type);
+      case "updated":
+      default:
+        return new Date(right.updatedAt).getTime() - new Date(left.updatedAt).getTime();
     }
-    if (right.id === DUAL_INSTANCE_SCRIPT_ID) {
-      return 1;
-    }
-    return 0;
   });
   const scriptCards = orderedScripts.map((script) =>
     buildAutomationCardPresentation({
@@ -884,6 +1104,75 @@ export function AutomationPage() {
         </div>
       </div>
 
+      <div className="flex items-center gap-3 flex-wrap">
+        <div className="relative flex-1 min-w-[180px] max-w-[320px]">
+          <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[var(--color-text-muted)]" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="搜索脚本名称、描述、标签…"
+            className="h-8 w-full rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-surface)] pl-8 pr-3 text-[12px] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:border-[var(--color-accent)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]"
+          />
+        </div>
+        <div className="flex items-center gap-1.5">
+          <ArrowUpDown className="h-3.5 w-3.5 text-[var(--color-text-muted)]" />
+          <select
+            value={sortMode}
+            onChange={(e) => setSortMode(e.target.value as SortMode)}
+            className="h-8 rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-surface)] px-2 text-[12px] text-[var(--color-text-primary)] focus:border-[var(--color-accent)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]"
+          >
+            <option value="updated">最近更新</option>
+            <option value="name">按名称</option>
+            <option value="type">按类型</option>
+          </select>
+        </div>
+        {scripts.length > 0 && (
+          <span className="text-[11px] text-[var(--color-text-muted)]">
+            共 {scripts.length} 个{searchQuery.trim() ? `，匹配 ${filteredScripts.length} 个` : ""}
+          </span>
+        )}
+        <div className="ml-auto flex items-center gap-2">
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={toggleSelectAll}
+            className="!h-7 !px-2 !text-[11px]"
+          >
+            {filteredScripts.length > 0 && filteredScripts.every((s) => selectedIds.has(s.id))
+              ? <><CheckSquare className="h-3 w-3" /> 取消全选</>
+              : <><Square className="h-3 w-3" /> 全选</>}
+          </Button>
+          {selectedIds.size > 0 && (
+            <>
+              <span className="text-[11px] font-medium text-[var(--color-accent)]">
+                已选 {selectedIds.size}
+              </span>
+              <Button
+                size="sm"
+                onClick={() => void handleBatchRun()}
+                disabled={batchRunning}
+                loading={batchRunning}
+                className="!h-7 !px-2 !text-[11px]"
+              >
+                <Play className="h-3 w-3" />
+                批量执行
+              </Button>
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => void handleBatchDelete()}
+                disabled={batchRunning}
+                className="!h-7 !px-2 !text-[11px] !border-red-300 !text-red-700 hover:!bg-red-50"
+              >
+                <Trash2 className="h-3 w-3" />
+                批量删除
+              </Button>
+            </>
+          )}
+        </div>
+      </div>
+
       <section className="rounded-[28px] border border-[var(--color-border-default)] bg-[var(--color-bg-subtle)] p-3 shadow-[var(--shadow-sm)] md:p-4">
         {loading ? (
           <div className="rounded-2xl border border-dashed border-[var(--color-border-default)] bg-[var(--color-bg-surface)] px-6 py-12 text-center text-sm text-[var(--color-text-muted)]">
@@ -920,13 +1209,44 @@ export function AutomationPage() {
               const script = scriptId ? scriptMap.get(scriptId) : undefined;
               const onRun = script ? () => handleOpenRunModal(script) : undefined;
 
+              const onDuplicate = script
+                ? () => void handleDuplicate(script)
+                : undefined;
+              const onExport = script
+                ? () => void handleExport(script)
+                : undefined;
+              const onDelete = script
+                ? () => void handleDelete(script)
+                : undefined;
+              const isSelected = scriptId ? selectedIds.has(scriptId) : false;
+
               return (
-                <AutomationScriptSummaryCard
-                  key={card.key}
-                  card={card}
-                  onOpen={onOpen}
-                  onRun={onRun}
-                />
+                <div key={card.key} className="relative">
+                  {scriptId && (
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); toggleSelect(scriptId); }}
+                      className={`absolute left-2 top-2 z-10 flex h-5 w-5 items-center justify-center rounded border transition-colors ${
+                        isSelected
+                          ? "border-[var(--color-accent)] bg-[var(--color-accent)] text-white"
+                          : "border-[var(--color-border-default)] bg-[var(--color-bg-surface)] text-transparent hover:border-[var(--color-border-strong)] hover:text-[var(--color-text-muted)]"
+                      }`}
+                      aria-label={isSelected ? "取消选中" : "选中"}
+                    >
+                      <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                    </button>
+                  )}
+                  <AutomationScriptSummaryCard
+                    card={card}
+                    onOpen={onOpen}
+                    onRun={onRun}
+                    onDuplicate={onDuplicate}
+                    onExport={onExport}
+                    onDelete={onDelete}
+                  />
+                </div>
               );
             })}
           </div>

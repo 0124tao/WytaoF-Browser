@@ -160,6 +160,25 @@ export async function resetSettings(): Promise<AppSettings> {
   return defaultSettings
 }
 
+// 数据存储路径
+export async function getDataStoragePath(): Promise<string> {
+  const bindings: any = await getBindings()
+  if (!bindings?.GetDataStoragePath) return ''
+  return (await bindings.GetDataStoragePath()) || ''
+}
+
+export async function setDataStoragePath(path: string): Promise<void> {
+  const bindings: any = await getBindings()
+  if (!bindings?.SetDataStoragePath) return
+  await bindings.SetDataStoragePath(path)
+}
+
+export async function browseDataStorageDirectory(): Promise<string> {
+  const bindings: any = await getBindings()
+  if (!bindings?.BrowseDataStorageDirectory) return ''
+  return (await bindings.BrowseDataStorageDirectory()) || ''
+}
+
 export async function initializeSystemData(): Promise<BackupActionResult> {
   const bindings: any = await getBindings()
   if (!bindings?.BackupInitializeSystem) {

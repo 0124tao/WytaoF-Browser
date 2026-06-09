@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Save, RotateCcw } from 'lucide-react'
+import { Save, RotateCcw, FolderOpen } from 'lucide-react'
 import { Card, Button, FormItem, Input, Select, Switch, ThemeSwitcher, toast } from '../../shared/components'
 import {
   fetchSettings,
@@ -17,6 +17,9 @@ import {
   automationRuntimeSelfCheck,
   applyUiScale,
   defaultAutomationState,
+  getDataStoragePath,
+  setDataStoragePath,
+  browseDataStorageDirectory,
 } from './api'
 import type { AppSettings } from './types'
 import type { AutomationNodeSource, AutomationRuntimeCheck, AutomationState, AutomationSystemNodeProbe } from './api'
@@ -36,6 +39,9 @@ export function SettingsPage() {
   const [automationNodeSourceDraft, setAutomationNodeSourceDraft] = useState<AutomationNodeSource>('auto')
   const [automationSystemNodePathDraft, setAutomationSystemNodePathDraft] = useState('')
   const [automationRuntimeDirty, setAutomationRuntimeDirty] = useState(false)
+  const [dataStoragePath, setDataStoragePathState] = useState('')
+  const [dataStoragePathDraft, setDataStoragePathDraft] = useState('')
+  const [dataStorageSaving, setDataStorageSaving] = useState(false)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [hasChanges, setHasChanges] = useState(false)
@@ -72,12 +78,15 @@ export function SettingsPage() {
   const loadSettings = async () => {
     setLoading(true)
     try {
-      const [data, automation] = await Promise.all([
+      const [data, automation, storagePath] = await Promise.all([
         fetchSettings(),
         fetchAutomationState(),
+        getDataStoragePath(),
       ])
       setSettings(data)
       setAutomationState(automation)
+      setDataStoragePathState(storagePath)
+      setDataStoragePathDraft(storagePath)
     } finally {
       setLoading(false)
     }
@@ -348,6 +357,35 @@ export function SettingsPage() {
     }
   }
 
+  const handleBrowseDataStorage = async () => {
+    const dir = await browseDataStorageDirectory()
+    if (dir) {
+      setDataStoragePathDraft(dir)
+    }
+  }
+
+  const handleSaveDataStoragePath = async () => {
+    const trimmed = dataStoragePathDraft.trim()
+    if (!trimmed) {
+      toast.error('路径不能为空')
+      return
+    }
+    if (trimmed === dataStoragePath) {
+      toast.info('路径未变更')
+      return
+    }
+    setDataStorageSaving(true)
+    try {
+      await setDataStoragePath(trimmed)
+      setDataStoragePathState(trimmed)
+      toast.success('数据存储路径已更新，重启应用后生效')
+    } catch (error: any) {
+      toast.error(error?.message || '保存路径失败')
+    } finally {
+      setDataStorageSaving(false)
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -510,37 +548,65 @@ export function SettingsPage() {
 
       {/* 高级设置 */}
       <Card title="高级设置" subtitle="高级配置选项">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <FormItem label="最大上传大小（MB）">
-            <Input
-              type="number"
-              value={settings.maxUploadSize}
-              onChange={e => handleChange('maxUploadSize', parseInt(e.target.value) || 10)}
-              min={1}
-              max={100}
-            />
+        <div className="space-y-4">
+          <FormItem label="数据存储路径" hint="浏览器 profile 数据存放目录，修改后重启生效">
+            <div className="flex gap-2">
+              <Input
+                className="flex-1"
+                value={dataStoragePathDraft}
+                onChange={e => setDataStoragePathDraft(e.target.value)}
+                placeholder="data"
+              />
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => { void handleBrowseDataStorage() }}
+                title="浏览"
+              >
+                <FolderOpen className="w-4 h-4" />
+              </Button>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => { void handleSaveDataStoragePath() }}
+                disabled={dataStorageSaving || dataStoragePathDraft.trim() === dataStoragePath}
+              >
+                {dataStorageSaving ? '保存中...' : '应用'}
+              </Button>
+            </div>
           </FormItem>
-          <FormItem label="会话超时（分钟）">
-            <Input
-              type="number"
-              value={settings.sessionTimeout}
-              onChange={e => handleChange('sessionTimeout', parseInt(e.target.value) || 30)}
-              min={5}
-              max={120}
-            />
-          </FormItem>
-          <FormItem label="日志级别">
-            <Select
-              value={settings.logLevel}
-              onChange={e => handleChange('logLevel', e.target.value as AppSettings['logLevel'])}
-              options={[
-                { value: 'debug', label: 'Debug' },
-                { value: 'info', label: 'Info' },
-                { value: 'warn', label: 'Warning' },
-                { value: 'error', label: 'Error' },
-              ]}
-            />
-          </FormItem>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <FormItem label="最大上传大小（MB）">
+              <Input
+                type="number"
+                value={settings.maxUploadSize}
+                onChange={e => handleChange('maxUploadSize', parseInt(e.target.value) || 10)}
+                min={1}
+                max={100}
+              />
+            </FormItem>
+            <FormItem label="会话超时（分钟）">
+              <Input
+                type="number"
+                value={settings.sessionTimeout}
+                onChange={e => handleChange('sessionTimeout', parseInt(e.target.value) || 30)}
+                min={5}
+                max={120}
+              />
+            </FormItem>
+            <FormItem label="日志级别">
+              <Select
+                value={settings.logLevel}
+                onChange={e => handleChange('logLevel', e.target.value as AppSettings['logLevel'])}
+                options={[
+                  { value: 'debug', label: 'Debug' },
+                  { value: 'info', label: 'Info' },
+                  { value: 'warn', label: 'Warning' },
+                  { value: 'error', label: 'Error' },
+                ]}
+              />
+            </FormItem>
+          </div>
         </div>
       </Card>
 

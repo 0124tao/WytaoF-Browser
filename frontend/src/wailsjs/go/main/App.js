@@ -130,6 +130,10 @@ export function BookmarkSyncToProfiles() {
   return window['go']['main']['App']['BookmarkSyncToProfiles']();
 }
 
+export function BrowseDataStorageDirectory() {
+  return window['go']['main']['App']['BrowseDataStorageDirectory']();
+}
+
 export function BrowserClearCookies(arg1) {
   return window['go']['main']['App']['BrowserClearCookies'](arg1);
 }
@@ -378,6 +382,10 @@ export function GetDashboardStats() {
   return window['go']['main']['App']['GetDashboardStats']();
 }
 
+export function GetDataStoragePath() {
+  return window['go']['main']['App']['GetDataStoragePath']();
+}
+
 export function GetInterceptor() {
   return window['go']['main']['App']['GetInterceptor']();
 }
@@ -468,6 +476,10 @@ export function SaveBrowserSettings(arg1) {
 
 export function SaveProxyCheckSettings(arg1) {
   return window['go']['main']['App']['SaveProxyCheckSettings'](arg1);
+}
+
+export function SetDataStoragePath(arg1) {
+  return window['go']['main']['App']['SetDataStoragePath'](arg1);
 }
 
 export function SetLogLevel(arg1) {
