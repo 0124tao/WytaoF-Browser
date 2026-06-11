@@ -109,6 +109,31 @@ require_cmd tar
 require_cmd dpkg-deb
 require_cmd wails
 
+WEBKIT_BUILD_TAGS=""
+WEBKIT_DEB_DEPENDS="libwebkit2gtk-4.1-0 | libwebkit2gtk-4.0-37"
+
+resolve_webkit_build_options() {
+  require_cmd pkg-config
+
+  if pkg-config --exists webkit2gtk-4.1; then
+    WEBKIT_BUILD_TAGS="webkit2_41"
+    WEBKIT_DEB_DEPENDS="libwebkit2gtk-4.1-0"
+    echo "WebKit : webkit2gtk-4.1 (Wails build tag: webkit2_41)"
+    return
+  fi
+
+  if pkg-config --exists webkit2gtk-4.0; then
+    WEBKIT_BUILD_TAGS=""
+    WEBKIT_DEB_DEPENDS="libwebkit2gtk-4.0-37"
+    echo "WebKit : webkit2gtk-4.0"
+    return
+  fi
+
+  echo "[ERROR] neither webkit2gtk-4.1 nor webkit2gtk-4.0 is available via pkg-config" >&2
+  echo "        install libwebkit2gtk-4.1-dev on Ubuntu 24.04, or libwebkit2gtk-4.0-dev on Debian 12." >&2
+  exit 1
+}
+
 if [[ -z "$VERSION" ]]; then
   VERSION="$(python3 - "$ROOT_DIR/wails.json" <<'PY'
 import json
@@ -178,6 +203,8 @@ if [[ ! -f "$WAILS_CONFIG" ]]; then
 fi
 
 if [[ "$SKIP_BUILD" -ne 1 ]]; then
+  resolve_webkit_build_options
+
   echo "[1/5] Installing frontend dependencies..."
   (cd "$ROOT_DIR/frontend" && BROWSERSLIST_IGNORE_OLD_DATA=1 npm ci --prefer-offline --no-audit --no-fund)
 
@@ -188,7 +215,11 @@ if [[ "$SKIP_BUILD" -ne 1 ]]; then
   rm -f "$APP_BIN"
   (
     cd "$ROOT_DIR"
-    wails build -s -platform "linux/$ARCH" -o wytaof-browser
+    wails_args=(build -s -platform "linux/$ARCH" -o wytaof-browser)
+    if [[ -n "$WEBKIT_BUILD_TAGS" ]]; then
+      wails_args+=(-tags "$WEBKIT_BUILD_TAGS")
+    fi
+    wails "${wails_args[@]}"
   )
 else
   echo "[WARN] skipping build step"
@@ -317,7 +348,7 @@ Architecture: ${ARCH}
 Maintainer: ${APP_MAINTAINER} <${APP_MAINTAINER_EMAIL}>
 Homepage: ${APP_HOMEPAGE}
 Installed-Size: ${INSTALLED_SIZE_KB}
-Depends: libc6 (>= 2.31), libgtk-3-0, libglib2.0-0, libwebkit2gtk-4.1-0 | libwebkit2gtk-4.0-37
+Depends: libc6 (>= 2.31), libgtk-3-0, libglib2.0-0, ${WEBKIT_DEB_DEPENDS}
 Description: ${APP_NAME} desktop app
  Multi-profile browser launcher with proxy-pool management.
  WytaoF Browser manages isolated browser profiles, proxy binding, and
