@@ -185,19 +185,19 @@ publish\output\WytaoFBrowser-Setup-<version>.exe
 默认只预览，不写数据库：
 
 ```powershell
-pwsh -File bat/recover-profiles.ps1 -AppRoot 'E:\software\WytaoF Browser'
+pwsh -File bat/recover-profiles.ps1 -AppRoot '<安装目录>'
 ```
 
 确认结果后再写回 `app.db`：
 
 ```powershell
-pwsh -File bat/recover-profiles.ps1 -AppRoot 'E:\software\WytaoF Browser' -Apply
+pwsh -File bat/recover-profiles.ps1 -AppRoot '<安装目录>' -Apply
 ```
 
 如果旧目录来自备份恢复，且怀疑存在跨内核残留状态，可同时为“风险目录”创建一份 `__repair_时间戳` 副本，再将新配置指向副本：
 
 ```powershell
-pwsh -File bat/recover-profiles.ps1 -AppRoot 'E:\software\WytaoF Browser' -Apply -RepairRisky
+pwsh -File bat/recover-profiles.ps1 -AppRoot '<安装目录>' -Apply -RepairRisky
 ```
 
 说明：

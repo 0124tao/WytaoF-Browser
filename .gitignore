@@ -63,11 +63,15 @@ DEPLOYMENT_GUIDE.md
 plan.md
 pic/
 
+# AI development skill files (not part of the project)
+skills/
+
 # Runtime data
 data/*
 !data/README.md
 snapshots/
 app.db
+/config.yaml
 config.yaml.broken-*
 *.db
 *.sqlite

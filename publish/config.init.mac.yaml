@@ -50,6 +50,10 @@ browser:
   profiles: []
 launch_server:
   port: 19876
+  auth:
+    enabled: true
+    api_key: ""
+    header: X-Ant-Api-Key
 automation:
   enabled: false
   install_policy: on_demand

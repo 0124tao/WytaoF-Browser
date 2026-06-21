@@ -143,6 +143,26 @@ WytaoF Browser 个人自用版适合以下场景：
 4. Linux 包下载后可直接安装 `wytaof-browser_<version>_<arch>.deb`，或解压 `tar.gz` 后运行 `wytaof-browser`。
 5. macOS unsigned 包解压后运行 `WytaoFBrowser-<version>-macos-<arch>.app`；如被 Gatekeeper 拦截，请对本机测试包执行 `xattr -dr com.apple.quarantine <app路径>` 后再打开。
 
+### 开发环境准备（从源码运行前必读）
+
+从源码运行本项目需要先安装以下工具：
+
+| 工具 | 最低版本 | 安装方式 |
+|---|---|---|
+| **Go** | 1.22+ | https://go.dev/dl/ |
+| **Node.js** | 18+ | https://nodejs.org/ (推荐 LTS) |
+| **Wails CLI v2** | latest | 安装 Go 后执行 `go install github.com/wailsapp/wails/v2/cmd/wails@latest` |
+| **Git** | — | https://git-scm.com/ |
+
+安装完成后可运行 `wails doctor` 检查所有依赖是否就绪。
+
+仅打包/发布需要（日常开发不装也行）：
+
+| 工具 | 用途 |
+|---|---|
+| **NSIS** | Windows 安装包（`bat\publish.bat W`） |
+| **Docker Desktop** | Linux 交叉编译（`bat\publish.bat L`） |
+
 ### 从源码运行
 
 1. 开发默认使用 `master` 分支；该分支不带测试用户数据，适合作为日常开发基线。
@@ -158,6 +178,17 @@ WytaoF Browser 个人自用版适合以下场景：
 - `bat\dev.bat live`：显式启动 Vite watcher，并通过 `-frontenddevserverurl` 接入桌面壳
 - `bat\dev.bat limited`：在 `live` 基础上为 watcher 与其子进程附加 Windows Job Object 内存限制
 - 如需为依赖下载配置代理，可在启动前设置 `DEV_PROXY_URL`、`DEV_NO_PROXY`、`DEV_GOPROXY`
+
+Linux / macOS 从源码开发：
+
+- Linux / macOS 执行 `bash dev.sh` 启动开发模式
+- 首次启动会自动安装前端依赖（`npm install`）并构建前端
+
+首次启动时自动生成的文件：
+
+- `config.yaml` — 应用运行配置（缺失时使用内置默认值，首次保存设置时创建）
+- `data/app.db` — SQLite 数据库（缺失时自动初始化空库）
+- `config.yaml` 中的 `launch_server.auth.api_key` — 首次启动自动生成随机 API Key 并写入配置
 
 ### Linux 发布打包（源码）
 
@@ -193,7 +224,7 @@ bash publish/mac/publish-mac.sh --arch arm64
 
 ```text
 chrome/
-  chrom-142/
+  Chrom-144/
     chrome.exe
     ...
 ```
@@ -235,6 +266,72 @@ chrome/
 ### 4. 多个账号怎么避免串号？
 
 建议采用一账号一实例、一实例一稳定代理的方式，不要混用浏览器环境，也不要频繁切换同一实例的出口 IP。
+
+## 压缩包迁移到另一台电脑
+
+本项目支持直接压缩项目文件夹迁移到另一台电脑。下面是完整步骤。
+
+### 压缩前应排除的目录/文件
+
+压缩前请删除或排除以下内容（它们包含个人数据、构建产物或可重建的缓存）：
+
+| 目录/文件 | 原因 | 大小 |
+|---|---|---|
+| `chatgpt_profiles/` | 外部脚本创建的浏览器 Profile 数据目录（如有），含 Cookie/Session | 视使用情况而定 |
+| `frontend/node_modules/` | npm 依赖缓存，新机器重新安装 | ~130 MB |
+| `frontend/dist/` | 前端构建输出，启动时自动重建 | ~5 MB |
+| `build/bin/` | Wails 构建产物+个人数据 | ~50 MB |
+| `publish/staging/` | 打包临时目录 | ~100 MB |
+| `publish/output/` | 安装包成品 | ~400 MB |
+| `data/app.db` | 个人数据库（可选保留） | ~100 KB |
+| `config.yaml` | 个人配置（可选保留） | ~3 KB |
+
+PowerShell 快速清理命令：
+
+```powershell
+# 在项目根目录执行
+Remove-Item -Recurse -Force chatgpt_profiles, frontend\node_modules, frontend\dist, build\bin, publish\staging, publish\output -ErrorAction SilentlyContinue
+```
+
+### 新电脑环境准备
+
+1. 安装 **Go 1.22+**：https://go.dev/dl/
+2. 安装 **Node.js 18+**：https://nodejs.org/
+3. 安装 **Wails CLI**：`go install github.com/wailsapp/wails/v2/cmd/wails@latest`
+4. 安装 **Git**：https://git-scm.com/
+5. 运行 `wails doctor` 确认所有依赖就绪
+
+### 解压后启动
+
+```powershell
+# Windows
+bat\dev.bat
+```
+
+```bash
+# Linux / macOS
+bash dev.sh
+```
+
+首次运行会自动：安装前端 npm 依赖 → 构建前端 → 启动应用。  
+如果 `config.yaml` 不存在，应用使用内置默认配置。首次保存设置时自动创建。  
+如果 `data/app.db` 不存在，自动初始化空数据库。
+
+### 浏览器内核
+
+浏览器内核需要手动放入 `chrome/` 目录（如 `chrome/Chrom-144/chrome.exe`），放好后在应用内「内核管理」中添加。  
+若 `chrome/` 目录体积过大不想迁移，可在新机器通过应用内下载功能重新准备。
+
+### 验证
+
+```powershell
+go version          # 确认 go1.22.x+
+node --version      # 确认 v18.x+
+wails doctor        # 确认 Wails 依赖全部就绪
+bat\dev.bat         # 启动应用（Windows）
+```
+
+> 更详细的迁移指南见 [项目说明.md](项目说明.md) 第 7 节"新电脑迁移指南"。
 
 ## Roadmap
 

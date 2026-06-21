@@ -49,18 +49,11 @@ browser:
     start_ready_timeout_ms: 3000
     start_stable_window_ms: 1200
     cores:
-        - core_id: core-Chrom-139
-          core_name: Chrome Chrom-139
-          core_path: chrome\Chrom-139
-          is_default: true
-        - core_id: core-Chrom-142
-          core_name: Chrome Chrom-142
-          core_path: chrome\Chrom-142
-          is_default: false
         - core_id: core-Chrom-144
           core_name: Chrome Chrom-144
           core_path: chrome\Chrom-144
-          is_default: false
+          is_default: true
+
 proxy_check:
     bridge_start_timeout_ms: 15000
     speed_target_id: google_204

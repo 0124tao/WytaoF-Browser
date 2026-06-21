@@ -6,8 +6,8 @@ import (
 	"encoding/hex"
 	"fmt"
 	"math/rand"
+	"os"
 	"strings"
-	"time"
 )
 
 // LicenseStatus 授权状态
@@ -96,10 +96,19 @@ func (a *App) RedeemCDKey(cdkey string) error {
 	return nil
 }
 
+// cdkeySalt 返回 CD-Key 校验盐值。
+// 优先读取环境变量 ANT_CDKEY_SALT；未设置时回退到旧硬编码值以兼容已签发的 CD-Key。
+// 新部署建议通过环境变量或构建参数注入自定义盐值。
+func cdkeySalt() string {
+	if v := os.Getenv("ANT_CDKEY_SALT"); v != "" {
+		return v
+	}
+	return "ANT-LITE-KEY-SALT-VER-1" // 旧版兼容回退值
+}
+
 // generateChecksum 生成简易校验和
 func generateChecksum(payload string) string {
-	salt := "ANT-LITE-KEY-SALT-VER-1"
-	hash := sha256.Sum256([]byte(payload + salt))
+	hash := sha256.Sum256([]byte(payload + cdkeySalt()))
 	return strings.ToUpper(hex.EncodeToString(hash[:])[0:8]) // 取前8位作为校验
 }
 
@@ -139,7 +148,6 @@ func (a *App) GenerateCDKeys(count int) ([]string, error) {
 		return nil, fmt.Errorf("生成数量无效 (1-1000)")
 	}
 
-	rand.Seed(time.Now().UnixNano())
 	var keys []string
 
 	for i := 0; i < count; i++ {

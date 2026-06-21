@@ -12,6 +12,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
@@ -48,6 +49,8 @@ func (a *App) startup(ctx context.Context) {
 	a.db = db
 	if err := db.Migrate(); err != nil {
 		log.Error("数据库迁移失败", logger.F("error", err))
+		runtime.LogFatal(ctx, fmt.Sprintf("数据库迁移失败，无法安全继续运行: %v", err))
+		return
 	}
 
 	a.startupInitManagers(cfg, db)
@@ -153,6 +156,20 @@ func (a *App) startupInitLaunchCode(log *logger.Logger) {
 
 func (a *App) startupInitLaunchServer(log *logger.Logger) {
 	port := a.config.LaunchServer.Port
+
+	// 当认证启用但 APIKey 为空时，自动生成随机 key 并持久化到配置文件
+	if a.config.LaunchServer.Auth.Enabled && a.config.LaunchServer.Auth.APIKey == "" {
+		generated := strings.ReplaceAll(generateUUID(), "-", "")
+		a.config.LaunchServer.Auth.APIKey = generated
+		log.Info("LaunchServer API Key 未配置，已自动生成并写入 config.yaml",
+			logger.F("api_key", generated),
+			logger.F("header", a.config.LaunchServer.Auth.Header),
+		)
+		if err := a.config.Save(a.resolveAppPath("config.yaml")); err != nil {
+			log.Error("保存自动生成的 LaunchServer API Key 失败", logger.F("error", err))
+		}
+	}
+
 	a.launchServer = launchcode.NewLaunchServer(a.launchCodeSvc, a, a.browserMgr, port)
 	a.launchServer.SetAPIAuthConfig(launchcode.APIAuthConfig{
 		Enabled: a.config.LaunchServer.Auth.Enabled,

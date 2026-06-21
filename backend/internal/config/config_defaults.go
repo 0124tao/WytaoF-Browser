@@ -293,13 +293,13 @@ func DefaultConfig() *Config {
 				Enabled:         true,
 				LogParameters:   true,
 				LogResults:      true,
-				SensitiveFields: []string{"password", "token", "secret"},
+				SensitiveFields: []string{"password", "token", "secret", "cookie", "api_key", "proxy_config"},
 			},
 		},
 		LaunchServer: LaunchServerConfig{
 			Port: DefaultLaunchServerPort,
 			Auth: LaunchServerAuthConfig{
-				Enabled: false,
+				Enabled: true,
 				APIKey:  "",
 				Header:  DefaultLaunchServerAPIKeyHeader,
 			},
