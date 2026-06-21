@@ -1,354 +1,85 @@
 # WytaoF Browser
 
-> 个人自用版本地指纹浏览器环境管理工具（Windows / Linux / macOS unsigned）。
-
-## 推荐内核项目
-
-WytaoF Browser 当前推荐配套使用的浏览器内核，来源于开源项目 [fingerprint-chromium](https://github.com/adryfish/fingerprint-chromium)。
-
-如果你正在寻找可直接下载和维护的指纹内核版本，建议先查看它的 Releases 页面：
-
-- <https://github.com/adryfish/fingerprint-chromium/releases>
-
-这个项目为 WytaoF Browser 的内核准备提供了直接可用的基础来源，这里先对原项目做明确推荐与致谢。
-
-WytaoF Browser 的目标很明确：作为个人自用版工具，在一台桌面设备上稳定管理多个彼此隔离的浏览器实例，并配合代理池、浏览器内核和快捷启动能力完成个人本地环境管理。
-
-## 目录
-
-- [项目简介](#项目简介)
-- [近期更新](#近期更新)
-- [更新日志](CHANGELOG.md)
-- [核心特性](#核心特性)
-- [界面预览](#界面预览)
-- [快速开始](#快速开始)
-- [常用操作](#常用操作)
-- [常见问题](#常见问题)
-- [Roadmap](#roadmap)
-- [贡献](#贡献)
-- [支持与反馈](#支持与反馈)
-- [License](#license)
-
-## 项目简介
-
-WytaoF Browser 个人自用版适合以下场景：
-
-- 多账号环境隔离
-- 需要独立代理出口的本地测试
-- 需要统一管理浏览器内核和实例配置的个人环境
-
-这个项目当前提供的核心价值是：
-
-- 给每个账号分配独立浏览器实例
-- 给每个实例绑定独立代理
-- 统一管理浏览器内核、标签、关键字和快捷打开码
-- 在本地保存配置和运行数据，便于自主控制
-
-## 近期更新
-
-### 1.2.0 · 2026-05-09
-
-- 重点升级接口调用：Launch API 补齐实例增删改查、按 code / selector 启动、runtime session / status / stop 和统一 CDP 入口，方便外部系统直接调用浏览器能力
-- 完善自动化接口链路：脚本执行支持 selector / params 覆盖和 `timeoutMs` 超时控制，双实例 runtime 流程支持超时取消与错误返回
-- 增强代理池：新增链式代理导入、编辑和预览能力，支持 HTTP / SOCKS5 两层链路，并优化直连代理批量导入
-- 优化代理检测：新增测速目标、IP 健康检测目标和桥接启动超时配置，链式代理也可以参与测速与健康检测
-- 改进实例启动：代理异常时支持本次直连启动，不修改实例原有代理配置；默认代理池只保留直连节点
-- 升级书签能力：新增 IP 检测站点默认书签，支持设置启动时自动打开，并可同步到已有未运行实例
-
-### 1.1.0 · 2026-03-19
-
-- 完善 Linux 支持：补齐 Linux 环境下的开发、打包、安装、启动与运行链路，并持续修复安装版启动与退出稳定性问题
-- 补齐 macOS unsigned 内测构建链路：支持在原生 macOS 主机上打包 `.app` / `.zip`，并将用户状态目录放到 `~/Library/Application Support/wytaof-browser`
-- 新增 SOCKS 代理测试支持：SOCKS 代理能力已进入测试阶段，后续会继续验证稳定性与兼容性
-- 实验性支持接口触发浏览器：支持通过接口启动浏览器实例，便于后续接入自动化流程
-
-完整历史版本记录见 [CHANGELOG.md](CHANGELOG.md)。
-
-## 源码分支说明
-
-- `master`：面向开发者的干净基线分支，不提交 `data/app.db`、实例目录或其他用户数据。首次启动时会自动初始化空数据库。
-- `user_data`：在 `master` 基础上额外提交一份 `data/app.db` 测试快照，便于演示、联调和复现问题。
-- 代理运行时 `bin/xray.exe`、`bin/sing-box.exe` 已随源码仓库提供；开发和发布打包不需要再单独下载这些运行时文件。
-
-## 核心特性
-
-- 实例隔离管理：支持创建、编辑、启动、停止、重启、克隆和删除浏览器实例
-- 代理池配置：支持统一维护代理节点，并将代理分配到具体实例
-- 多协议支持：支持常见代理配置方式，并支持导入 Clash
-- 内核管理：支持维护多个 Chrome 内核版本，并设置默认内核
-- 快捷启动：支持通过实例 Code 和 `Ctrl + K` 快速打开目标实例
-- 标签与检索：支持按标签、关键字、状态、代理、内核、分组进行筛选
-- 本地化存储：配置和实例数据保存在本地，适合长期使用和备份
-
-## 界面预览
-
-### 1. 控制台
+> 个人自用本地指纹浏览器环境管理工具，支持 Windows / Linux / macOS。
 
 <img src="images/readme/001-首页.png" alt="控制台" width="100%" />
 
-对应功能点：
+## 核心特性
 
-- 查看实例总数、运行中实例、代理节点数量和内核版本
-- 从首页快速进入 `实例列表`、`代理池配置`、`内核管理`、`系统设置`
-- 查看客户端版本、运行环境、数据存储和当前实例运行状态
+- **实例隔离** — 每个账号独立浏览器环境，互不干扰
+- **代理池** — 统一管理代理节点，支持 HTTP / SOCKS5 / 链式代理 / Clash 导入
+- **内核管理** — 多版本 Chrome 指纹内核，应用内下载或手动导入
+- **Launch API** — 本地 HTTP 接口，支持外部系统调用（创建/启动/停止/CDP 连接）
+- **自动化脚本** — 内置脚本引擎，支持按实例运行自定义自动化任务
+- **快捷操作** — `Ctrl+K` 全局搜索，按 Code / 名称 / 标签秒开实例
+- **跨平台** — Windows 安装版/便携版、Linux deb/tar.gz、macOS unsigned app
 
-### 2. 实例列表
+## 技术栈
 
-<img src="images/readme/002-实例列表.png" alt="实例列表" width="100%" />
-
-对应功能点：
-
-- 统一查看和管理所有浏览器实例
-- 按状态、代理、内核、分组、关键字筛选实例
-- 支持 `新建配置`、启动、停止、重启、配置、克隆、删除
-- 给实例分配快捷打开码，后续可以直接快速启动
-
-### 3. 代理池配置
-
-<img src="images/readme/003-设置代理池.png" alt="代理池配置" width="100%" />
-
-对应功能点：
-
-- 统一管理代理节点
-- 支持按协议、分组筛选代理
-- 支持手动维护代理和导入 Clash
-- 支持查看延迟、IP 健康并挑选可用节点
-
-### 4. 代理生效验证
-
-<img src="images/readme/004-自定义代理.png" alt="代理生效验证" width="100%" />
-
-对应功能点：
-
-- 启动实例后访问 IP 检测网站验证代理是否真正生效
-- 检查 IP 地区、ASN、运营商和风险值等信息
-- 用于确认当前实例是否已经走目标代理出口
+Go 1.22+ · Wails v2 · Vue 3 + Vite · SQLite · xray/sing-box 代理桥接
 
 ## 快速开始
 
-### 环境要求
+### 安装版
 
-- 操作系统：
-  - Windows 10 / 11（64 位）
-  - Linux（amd64 / arm64）
-  - macOS（amd64 / arm64，当前为 unsigned 内测包）
-- 建议内存：8 GB 及以上
-- 建议磁盘空间：2 GB 以上
+1. 在 Releases 或 `publish/output/` 获取安装包
+2. Windows: 运行 `WytaoFBrowser-Setup-*.exe`
+3. Linux: `sudo dpkg -i wytaof-browser_*.deb` 或解压 tar.gz
+4. macOS: 解压后运行 `.app`（如被拦截执行 `xattr -dr com.apple.quarantine <app路径>`）
 
-### 下载与运行
-
-1. 构建完成后在 `publish/output/` 获取安装包。
-2. Windows 安装版直接运行 `WytaoFBrowser-Setup-*.exe`。
-3. 便携版解压后运行 `wytaof-browser.exe`。
-4. Linux 包下载后可直接安装 `wytaof-browser_<version>_<arch>.deb`，或解压 `tar.gz` 后运行 `wytaof-browser`。
-5. macOS unsigned 包解压后运行 `WytaoFBrowser-<version>-macos-<arch>.app`；如被 Gatekeeper 拦截，请对本机测试包执行 `xattr -dr com.apple.quarantine <app路径>` 后再打开。
-
-### 开发环境准备（从源码运行前必读）
-
-从源码运行本项目需要先安装以下工具：
-
-| 工具 | 最低版本 | 安装方式 |
-|---|---|---|
-| **Go** | 1.22+ | https://go.dev/dl/ |
-| **Node.js** | 18+ | https://nodejs.org/ (推荐 LTS) |
-| **Wails CLI v2** | latest | 安装 Go 后执行 `go install github.com/wailsapp/wails/v2/cmd/wails@latest` |
-| **Git** | — | https://git-scm.com/ |
-
-安装完成后可运行 `wails doctor` 检查所有依赖是否就绪。
-
-仅打包/发布需要（日常开发不装也行）：
-
-| 工具 | 用途 |
-|---|---|
-| **NSIS** | Windows 安装包（`bat\publish.bat W`） |
-| **Docker Desktop** | Linux 交叉编译（`bat\publish.bat L`） |
-
-### 从源码运行
-
-1. 开发默认使用 `master` 分支；该分支不带测试用户数据，适合作为日常开发基线。
-2. 如需带测试库的演示环境，请切换到 `user_data` 分支。
-3. Windows 统一执行 `bat\dev.bat`；默认是稳定模式，如需前端 HMR 联调使用 `bat\dev.bat live`，如需受限内存复现使用 `bat\dev.bat limited`。
-4. Windows 运行时使用 `bin/xray.exe`、`bin/sing-box.exe`；Linux 运行时使用 `bin/linux-<arch>/xray`、`bin/linux-<arch>/sing-box`；macOS 运行时使用 `bin/darwin-<arch>/xray`、`bin/darwin-<arch>/sing-box`。
-5. 运行时文件采用“仓库固定 + 哈希校验”，校验清单在 `publish/runtime-manifest.json`，固定来源清单在 `publish/runtime-sources.json`。
-6. 如需刷新 Linux / macOS 运行时，执行 `python3 tools/runtime/sync-runtime.py --target <target>`（会按固定来源下载、校验归档并更新 manifest）。
-
-开发模式说明：
-
-- `bat\dev.bat`：默认稳定模式，先构建 `frontend/dist`，再以静态资源模式启动 Wails，不依赖外部 Vite dev server
-- `bat\dev.bat live`：显式启动 Vite watcher，并通过 `-frontenddevserverurl` 接入桌面壳
-- `bat\dev.bat limited`：在 `live` 基础上为 watcher 与其子进程附加 Windows Job Object 内存限制
-- 如需为依赖下载配置代理，可在启动前设置 `DEV_PROXY_URL`、`DEV_NO_PROXY`、`DEV_GOPROXY`
-
-Linux / macOS 从源码开发：
-
-- Linux / macOS 执行 `bash dev.sh` 启动开发模式
-- 首次启动会自动安装前端依赖（`npm install`）并构建前端
-
-首次启动时自动生成的文件：
-
-- `config.yaml` — 应用运行配置（缺失时使用内置默认值，首次保存设置时创建）
-- `data/app.db` — SQLite 数据库（缺失时自动初始化空库）
-- `config.yaml` 中的 `launch_server.auth.api_key` — 首次启动自动生成随机 API Key 并写入配置
-
-### Linux 发布打包（源码）
-
-Linux 发布脚本位于 `publish/linux/`。
+### 从源码开发
 
 ```bash
-bash publish/linux/publish-linux.sh --arch amd64
-bash publish/linux/publish-linux.sh --arch arm64
-```
+# 依赖：Go 1.22+, Node.js 18+, Wails CLI v2
+go install github.com/wailsapp/wails/v2/cmd/wails@latest
+wails doctor  # 检查环境
 
-详细说明见 [publish/linux/README.md](publish/linux/README.md)。
-
-### macOS unsigned 发布打包（源码）
-
-macOS 发布脚本位于 `publish/mac/`，必须在原生 macOS 主机上执行，且目标架构需与主机架构一致。
-
-```bash
-bash publish/mac/publish-mac.sh --arch amd64
-bash publish/mac/publish-mac.sh --arch arm64
-```
-
-脚本会生成 unsigned `.app` 和 `.zip`，适合 PR 验证与内部测试。详细说明见 [publish/mac/README.md](publish/mac/README.md)。
-
-### 准备浏览器内核
-
-代理运行时已经随仓库提供，你只需要准备浏览器内核。
-
-1. 打开应用，进入 `指纹浏览器 > 内核管理`
-2. 优先使用应用内下载功能准备内核
-3. 如果手动准备内核，请确保目录下存在 `chrome.exe`
-
-建议目录结构：
-
-```text
-chrome/
-  Chrom-144/
-    chrome.exe
-    ...
-```
-
-### 第一次使用建议流程
-
-1. 在 `代理池配置` 中先导入或新增可用代理节点
-2. 在 `实例列表` 中点击 `新建配置`
-3. 选择实例名称、内核、代理、标签和需要的启动参数
-4. 返回实例列表，点击启动按钮运行实例
-5. 打开 IP 检测网站，确认代理结果是否符合预期
-
-## 常用操作
-
-| 目标 | 入口 | 说明 |
-| --- | --- | --- |
-| 新建浏览器实例 | `实例列表 > 新建配置` | 创建一个新的独立浏览器环境 |
-| 配置代理池 | `代理池配置` | 维护代理节点并检查延迟、健康状态 |
-| 绑定实例代理 | `实例编辑页` | 给指定实例分配目标代理节点 |
-| 启动实例 | `实例列表` | 单击启动按钮即可运行目标实例 |
-| 快速打开实例 | `Ctrl + K` | 可按 Code、实例名、标签、关键字快速检索 |
-| 管理浏览器内核 | `内核管理` | 新增、编辑、删除和设置默认内核 |
-| 验证代理结果 | 启动实例后访问 IP 检测网站 | 核对 IP、地区、ASN、风险值 |
-
-## 常见问题
-
-### 1. 应用无法启动怎么办？
-
-先检查浏览器内核路径是否有效，并确认目标目录下存在 `chrome.exe`。
-
-### 2. 实例启动了但代理没有生效怎么办？
-
-先检查代理节点本身是否可用，再确认该实例已经正确绑定代理。建议启动后访问 IP 检测网站复核当前出口。
-
-### 3. 实例太多，怎么快速找到目标实例？
-
-可以在 `实例列表` 中按状态、代理、内核、分组、关键字筛选，也可以通过 `Ctrl + K` 使用实例 Code 或名称快速启动。
-
-### 4. 多个账号怎么避免串号？
-
-建议采用一账号一实例、一实例一稳定代理的方式，不要混用浏览器环境，也不要频繁切换同一实例的出口 IP。
-
-## 压缩包迁移到另一台电脑
-
-本项目支持直接压缩项目文件夹迁移到另一台电脑。下面是完整步骤。
-
-### 压缩前应排除的目录/文件
-
-压缩前请删除或排除以下内容（它们包含个人数据、构建产物或可重建的缓存）：
-
-| 目录/文件 | 原因 | 大小 |
-|---|---|---|
-| `chatgpt_profiles/` | 外部脚本创建的浏览器 Profile 数据目录（如有），含 Cookie/Session | 视使用情况而定 |
-| `frontend/node_modules/` | npm 依赖缓存，新机器重新安装 | ~130 MB |
-| `frontend/dist/` | 前端构建输出，启动时自动重建 | ~5 MB |
-| `build/bin/` | Wails 构建产物+个人数据 | ~50 MB |
-| `publish/staging/` | 打包临时目录 | ~100 MB |
-| `publish/output/` | 安装包成品 | ~400 MB |
-| `data/app.db` | 个人数据库（可选保留） | ~100 KB |
-| `config.yaml` | 个人配置（可选保留） | ~3 KB |
-
-PowerShell 快速清理命令：
-
-```powershell
-# 在项目根目录执行
-Remove-Item -Recurse -Force chatgpt_profiles, frontend\node_modules, frontend\dist, build\bin, publish\staging, publish\output -ErrorAction SilentlyContinue
-```
-
-### 新电脑环境准备
-
-1. 安装 **Go 1.22+**：https://go.dev/dl/
-2. 安装 **Node.js 18+**：https://nodejs.org/
-3. 安装 **Wails CLI**：`go install github.com/wailsapp/wails/v2/cmd/wails@latest`
-4. 安装 **Git**：https://git-scm.com/
-5. 运行 `wails doctor` 确认所有依赖就绪
-
-### 解压后启动
-
-```powershell
 # Windows
 bat\dev.bat
-```
 
-```bash
 # Linux / macOS
 bash dev.sh
 ```
 
-首次运行会自动：安装前端 npm 依赖 → 构建前端 → 启动应用。  
-如果 `config.yaml` 不存在，应用使用内置默认配置。首次保存设置时自动创建。  
-如果 `data/app.db` 不存在，自动初始化空数据库。
+首次启动自动初始化 `config.yaml`（含随机 Launch API Key）和 `data/app.db`。
 
-### 浏览器内核
+### 准备内核
 
-浏览器内核需要手动放入 `chrome/` 目录（如 `chrome/Chrom-144/chrome.exe`），放好后在应用内「内核管理」中添加。  
-若 `chrome/` 目录体积过大不想迁移，可在新机器通过应用内下载功能重新准备。
+应用内 `内核管理` 页面支持在线下载，或手动放入 `chrome/Chrom-XXX/chrome.exe`。
 
-### 验证
+推荐内核来源：[fingerprint-chromium](https://github.com/adryfish/fingerprint-chromium/releases)
 
-```powershell
-go version          # 确认 go1.22.x+
-node --version      # 确认 v18.x+
-wails doctor        # 确认 Wails 依赖全部就绪
-bat\dev.bat         # 启动应用（Windows）
+## Launch API
+
+启动后默认监听 `127.0.0.1:19876`，认证 header: `X-Ant-Api-Key`。
+
+```bash
+# 健康检查
+curl -H "X-Ant-Api-Key: <key>" http://127.0.0.1:19876/api/health
+
+# 列出实例
+curl -H "X-Ant-Api-Key: <key>" http://127.0.0.1:19876/api/profiles
+
+# 启动实例
+curl -X POST -H "X-Ant-Api-Key: <key>" -H "Content-Type: application/json" \
+  -d '{"profileId": "<id>"}' http://127.0.0.1:19876/api/launch
 ```
 
-> 更详细的迁移指南见 [项目说明.md](项目说明.md) 第 7 节"新电脑迁移指南"。
+完整接口参考 `backend/internal/launchcode/server_http.go`。
 
-## Roadmap
+## 常见问题
 
-- 完善自动化模块能力
-- 持续补充使用文档和接口说明
-- 增强实例模板、批量管理和检索体验
+| 问题 | 解决 |
+|------|------|
+| 应用无法启动 | 检查内核路径下是否有 `chrome.exe` |
+| 代理未生效 | 确认代理节点可用 + 实例已绑定代理，启动后访问 IP 检测站验证 |
+| 快速找实例 | `Ctrl+K` 按 Code/名称/标签搜索 |
+| 避免串号 | 一账号一实例、一实例一代理，不混用环境 |
 
-## 贡献
+## 更新日志
 
-欢迎通过 Issue 和 Pull Request 参与改进。
-
-- Bug 反馈：请附带版本号、系统版本、复现步骤和截图
-- 功能建议：请说明业务场景、预期行为和现有问题
-- 文档优化：欢迎直接提交 README、教程和截图说明相关改进
-
-如果是较大改动，建议先开 Issue 对齐需求再提交 PR。
+见 [CHANGELOG.md](CHANGELOG.md)。
 
 ## License
 
-当前仓库暂未附带独立的 `LICENSE` 文件，后续会补充。
+MIT
