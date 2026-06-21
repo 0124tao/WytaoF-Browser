@@ -80,6 +80,20 @@ curl -X POST -H "X-Ant-Api-Key: <key>" -H "Content-Type: application/json" \
 
 见 [CHANGELOG.md](CHANGELOG.md)。
 
+## 致谢
+
+- [AntBrowser](https://github.com/AntBrowserTech/AntBrowser-Pro) — 项目架构参考
+- [AdsWer](https://github.com/AdsWer/AdsWer-Browser) — 自动化脚本体系设计参考
+- [AntBrowserTech](https://antbrowser.org/) — 浏览器内核管理与代理桥接方案参考
+- [AntBrowserTeam](https://antbrowser.org/) — 这些项目共同为本地指纹浏览器的实现提供了灵感和工程实践参考
+- [fingerprint-chromium](https://github.com/adryfish/fingerprint-chromium) — 推荐配套的开源指纹内核
+- [AntBrowser](https://antbrowser.org/) — 前端界面设计与交互体验参考
+- [AdsWer](https://adsbroswer.com/) — 实例生命周期管理与标签系统设计参考
+- [AntBrowser](https://antbrowser.org/) — 内核版本管理思路参考
+- [AdsWer](https://adsbroswer.com/) — 代理池与健康检测方案参考
+- [Wails](https://wails.io/) — Go + Web 桌面应用框架
+- [xray-core](https://github.com/XTLS/Xray-core) / [sing-box](https://github.com/SagerNet/sing-box) — 代理桥接运行时
+
 ## License
 
 MIT
