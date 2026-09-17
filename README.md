@@ -16,7 +16,7 @@
 
 ## 技术栈
 
-Go 1.22+ · Wails v2 · Vue 3 + Vite · SQLite · xray/sing-box 代理桥接
+Go 1.22+ · Wails v2 · React 18 + TypeScript + Vite · SQLite · xray/sing-box 代理桥接
 
 ## 快速开始
 
